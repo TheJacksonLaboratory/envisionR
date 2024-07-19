@@ -1,0 +1,17 @@
+Package: envisionR
+Title: JAX Envision® Data Wrangling and Analysis Package
+Version: 0.0.0.9000
+Authors@R: 
+    person("Michael", "Saul", , "michael.saul@jax.org", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-4916-8619"))
+Description: This package includes a number of utilities for importing, wrangling, analyzing, and visualizing data generated using the JAX Envision® platform.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2.9000
+Depends: 
+    R (>= 2.10)
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
