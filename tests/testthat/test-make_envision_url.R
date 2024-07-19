@@ -11,6 +11,19 @@ test_that("test that make_envision_url() returns a well-formed Envision URL", {
                                  windowend_h = 3,
                                  metricstab = "cage",
                                  videostream = "overlay",
-                                 url_base = "https://app.murine.net/org/"),
+                                 url_base = "https://app.murine.net/org"),
+               url_return)
+})
+
+test_that("test that make_envision_url() can pull out slashes at the end of the URL base", {
+  expect_equal(make_envision_url(org = 1001,
+                                 study = 1001,
+                                 cage = 1001,
+                                 vidstart = lubridate::ymd_hms("2023-06-12 07:45:00", tz = "US/Central"),
+                                 windowstart_h = 3,
+                                 windowend_h = 3,
+                                 metricstab = "cage",
+                                 videostream = "overlay",
+                                 url_base = "https://app.murine.net/org///"),
                url_return)
 })
