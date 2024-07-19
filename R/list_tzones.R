@@ -10,7 +10,7 @@
 list_tzones = function() {
 
   # Getting right libraries
-  stopifnot(require(dplyr))
+  stopifnot(requireNamespace("dplyr", quietly = TRUE))
 
   # Grabbing the data frame
   tzones = timezones_df |>

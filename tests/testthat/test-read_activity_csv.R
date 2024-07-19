@@ -1,5 +1,12 @@
 # Unit tests for the read_activity_csv() function.
 
+# Getting required libraries
+require("tibble")
+require("janitor")
+require("dplyr")
+require("lubridate")
+require("hms")
+
 # Writing out a dummy CSV file
 tempcsv_1 = tempfile("testactivity", fileext = ".csv")
 writeLines(csv_lines, tempcsv_1)
@@ -28,6 +35,7 @@ csv_out = read.csv(text = csv_lines) |>
                 water_occupancy_mean_per_cage_s_hour = as.numeric(water_occupancy_mean_per_cage_s_hour),
                 tzone = "US/Pacific")
 
+# Doing the tests
 test_that("read_activity_csv() returns expected tibble with default parameters", {
   expect_equal(read_activity_csv(tempcsv_1, tz = "US/Pacific"),
                csv_out)

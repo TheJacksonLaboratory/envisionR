@@ -1,5 +1,6 @@
 # Unit tests for the make_envision_url() function.
 
+require("lubridate")
 url_return = "https://app.murine.net/org/1001/study/1001/cage/1001?metricsTab=cage&rangeEnd=1686584700000&rangeStart=1686563100000&videoStart=1686573900000&videoStream=overlay"
 
 test_that("test that make_envision_url() returns a well-formed Envision URL", {

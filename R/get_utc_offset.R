@@ -13,7 +13,7 @@
 get_utc_offset = function(ts, as_numeric = FALSE) {
 
   # Throwing an error if the R installation does not include lubridate
-  stopifnot(require("lubridate"))
+  stopifnot(requireNamespace("lubridate", quietly = TRUE))
 
   # Throwing an error if timestamp is not a timepoint
   stopifnot(lubridate::is.timepoint(ts))

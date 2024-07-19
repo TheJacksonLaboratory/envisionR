@@ -13,10 +13,10 @@
 weeks_postnatal_seq <- function(dob, n_weeks) {
 
   # Throwing an error if lubridate is not available
-  stopifnot(require(lubridate))
+  stopifnot(requireNamespace("lubridate", quietly = TRUE))
 
   # Throwing an error if DOB is not a Date
-  stopifnot(is.Date(dob))
+  stopifnot(lubridate::is.Date(dob))
 
   # Throwing an error if number of n_weeks is not numeric
   stopifnot(is.numeric(n_weeks))

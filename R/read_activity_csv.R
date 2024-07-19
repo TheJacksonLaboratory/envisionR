@@ -10,21 +10,22 @@
 #' @export
 #' @examples
 #' # Writing test CSV file
-#' activity_csv = tempfile("testactivity", fileext = ".csv")
+#' activity_csv <- tempfile("testactivity", fileext = ".csv")
 #' readr::write_lines(csv_lines, file = activity_csv)
 #'
 #' # Reading in test CSV file
-#' read_activity_csv(csv = activity_csv, tz = "US/Pacific")
+#' activity <- read_activity_csv(csv = activity_csv, tz = "US/Pacific")
+#' dplyr::glimpse(activity)
 
 read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
                               metrics = c("cage","animal")) {
 
   # Ensuring required packages are loaded
-  stopifnot(require(readr))
-  stopifnot(require(janitor))
-  stopifnot(require(dplyr))
-  stopifnot(require(lubridate))
-  stopifnot(require(tibble))
+  stopifnot(requireNamespace("readr", quietly = TRUE))
+  stopifnot(requireNamespace("janitor", quietly = TRUE))
+  stopifnot(requireNamespace("dplyr", quietly = TRUE))
+  stopifnot(requireNamespace("lubridate", quietly = TRUE))
+  stopifnot(requireNamespace("tibble", quietly = TRUE))
 
   # Reading in raw data
   activity_data <- readr::read_csv(csv, show_col_types = FALSE) |>
@@ -56,7 +57,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 
     # Getting unique time zones that are assumed.
     unique_tzs <- probable_tzones |>
-      pull(tz_name) |>
+      dplyr::pull(tz_name) |>
       unique()
 
     # Setting time zone according to a series of conditions
@@ -65,7 +66,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     } else {
       unique_tzs_override <- probable_tzones |>
         dplyr::filter(override == 1) |>
-        pull(tz_name) |>
+        dplyr::pull(tz_name) |>
         unique()
       if (length(unique_tzs_override) == 1) {
         tz_assume = unique_tzs_override
@@ -85,7 +86,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
       activity_data <- activity_data |>
         dplyr::mutate(start = lubridate::with_tz(start, tzone = tz),
                       tzone = tz)
-      if (!(tz %in% (compatible_tzones |> pull(tz_name)))) {
+      if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
         warning(paste("UTC offset for the", tz,
                       "time zone mismatches suggested time zones."))
       }

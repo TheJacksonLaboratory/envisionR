@@ -22,7 +22,7 @@ make_envision_url = function(org, study, cage, vidstart,
                              metricstab = "cage", videostream = "overlay",
                              url_base = "https://app.murine.net/org/") {
   # Ensuring required packages are present
-  stopifnot(require(lubridate))
+  stopifnot(requireNamespace("lubridate", quietly = TRUE))
 
   # Checking each argument
   stopifnot(metricstab %in% c("cage","animal","alpha"))
