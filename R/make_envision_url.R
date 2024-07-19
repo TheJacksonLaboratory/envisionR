@@ -38,7 +38,7 @@ make_envision_url = function(org, study, cage, vidstart,
   timestamp = format(1000 * unix_time, scientific = FALSE)
   ws = format(unix_time * 1000 - windowstart_h * 3.6e6, scientific = FALSE)
   we = format(unix_time * 1000 + windowend_h * 3.6e6, scientific = FALSE)
-  url_base = gsub("/$", "", url_base) # Pulling any unintended slash from URL base
+  url_base = gsub("/+$", "", url_base) # Pulling any unintended slashes from URL base
   url_end = paste0(cage, "?metricsTab=", metricstab, "&rangeEnd=",
                    we, "&rangeStart=", ws, "&videoStart=", timestamp,
                    "&videoStream=", videostream)
