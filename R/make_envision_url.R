@@ -21,11 +21,13 @@ make_envision_url = function(org, study, cage, vidstart,
                              windowstart_h = 12, windowend_h = 12,
                              metricstab = "cage", videostream = "overlay",
                              url_base = "https://app.murine.net/org/") {
+  # Ensuring required packages are present
+  stopifnot(require(lubridate))
 
   # Checking each argument
   stopifnot(metricstab %in% c("cage","animal","alpha"))
   stopifnot(videostream %in% c("overlay"))
-  stopifnot(is.instant(vidstart))
+  stopifnot(lubridate::is.instant(vidstart))
   stopifnot(is.numeric(org))
   stopifnot(is.numeric(study))
   stopifnot(is.numeric(cage))
@@ -36,6 +38,7 @@ make_envision_url = function(org, study, cage, vidstart,
   timestamp = format(1000 * unix_time, scientific = FALSE)
   ws = format(unix_time * 1000 - windowstart_h * 3.6e6, scientific = FALSE)
   we = format(unix_time * 1000 + windowend_h * 3.6e6, scientific = FALSE)
+  url_base = gsub("/$", "", url_base) # Pulling any unintended slash from URL base
   url_end = paste0(cage, "?metricsTab=", metricstab, "&rangeEnd=",
                    we, "&rangeStart=", ws, "&videoStart=", timestamp,
                    "&videoStream=", videostream)
