@@ -3,6 +3,6 @@
 # Note: this is essentially tautological
 test_that("list_tzones() works", {
   expect_equal(list_tzones(),
-               envisionR:::timezones |>
+               timezones_df |>
                  dplyr::select(-assume, -override, -zone))
 })

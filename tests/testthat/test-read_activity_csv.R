@@ -1,24 +1,16 @@
 # Unit tests for the read_activity_csv() function.
 
-# Making dummy CSV file
-csv_lines_1 = "start,start.date.local,start.time.local,study.code,aggregation.seconds,group.name,cage.name,animals.cage.quantity,light.cycle,movement.mean.per_cage.cm_s.hour,wheel_occupancy.mean.per_cage.s.hour,food_occupancy.mean.per_cage.s.hour,water_occupancy.mean.per_cage.s.hour
-2023-11-01 23:00:00+00:00,2023-11-01,16:00:00,test1,3600,G1,A1,3,Light,2,0,0.003,0
-2023-11-02 00:00:00+00:00,2023-11-01,17:00:00,test1,3600,G1,A1,3,Light,2.8,0.025,0.004,0.0002
-2023-11-02 01:00:00+00:00,2023-11-01,18:00:00,test1,3600,G1,A1,3,Dark,6,0.1,0.07,0.012
-2023-11-02 02:00:00+00:00,2023-11-01,19:00:00,test1,3600,G1,A1,3,Dark,5.5,0.08,0.1,0.008"
-
-# Writing out the dummy CSV file
-csv_lines_1 = unlist(strsplit(csv_lines_1, "\n"))
+# Writing out a dummy CSV file
 tempcsv_1 = tempfile("testactivity", fileext = ".csv")
-writeLines(csv_lines_1, tempcsv_1)
+writeLines(csv_lines, tempcsv_1)
 
 # Writing out the CSV file that should throw an unambiguous time code error
-csv_lines_error = gsub("19:00:00","22:00:00",csv_lines_1)
+csv_lines_error = gsub("19:00:00","22:00:00",csv_lines)
 tempcsv_2 = tempfile("testactivity_error", fileext = ".csv")
 writeLines(csv_lines_error, tempcsv_2)
 
 # Making the data frame with variable types that should match the wrangled CSV file
-csv_out = read.csv(text = csv_lines_1) |>
+csv_out = read.csv(text = csv_lines) |>
   tibble::as_tibble() |>
   janitor::clean_names() |>
   dplyr::mutate(start = lubridate::ymd_hms(start, tz = "US/Pacific", quiet = TRUE),

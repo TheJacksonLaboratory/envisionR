@@ -4,11 +4,17 @@
 #' @param csv File path for the Envision® CSV.
 #' @param tz Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.
 #' @param occupancy_normalize Should the function normalize activity by cage occupancy? Default: \code{FALSE}.
+#' @param metrics Should the function expect cage or animal level activity metrics? Default: \code{"cage"}
 #' @returns A \code{tibble} with experimental data optimally formatted for downstream analysis.
 #' @keywords Envision
 #' @export
 #' @examples
-#' read_envision_csv()
+#' # Writing test CSV file
+#' activity_csv = tempfile("testactivity", fileext = ".csv")
+#' readr::write_lines(csv_lines, file = activity_csv)
+#'
+#' # Reading in test CSV file
+#' read_activity_csv(csv = activity_csv, tz = "US/Pacific")
 
 read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
                               metrics = c("cage","animal")) {
@@ -34,7 +40,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     dplyr::mutate(min_starttime = min(start)) |>
     dplyr::select(utc_offset_h, min_starttime) |>
     dplyr::summarize(min_starttime_utc = min(min_starttime)) |>
-    dplyr::left_join(envisionR:::timezones, by = "utc_offset_h")
+    dplyr::left_join(timezones_df, by = "utc_offset_h")
 
   # Assigning time zone
   if (is.null(tz)) {
@@ -75,7 +81,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     warning(paste0("Assuming time zone: ", tz_assume,
                    ". Set time zone explicitly if different."))
   } else {
-    if (tz %in% envisionR:::timezones$tz_name) {
+    if (tz %in% timezones_df$tz_name) {
       activity_data <- activity_data |>
         dplyr::mutate(start = lubridate::with_tz(start, tzone = tz),
                       tzone = tz)

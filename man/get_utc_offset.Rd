@@ -19,6 +19,6 @@ This function computes UTC offset for a given time point.
 Getting a UTC offset can be useful when daylight time starts or stops.
 }
 \examples{
-get_utc_offset()
+get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00", tz = "US/Pacific"))
 }
 \keyword{Envision}

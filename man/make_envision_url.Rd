@@ -25,13 +25,15 @@ make_envision_url(
 
 \item{vidstart}{Start time of the video (usually a \code{timepoint} or \code{instant} created with the \code{lubridate} package).}
 
+\item{windowstart_h}{Hours before the start of the video for the window.}
+
+\item{windowend_h}{Hours after the start of the video for the window.}
+
 \item{metricstab}{Which metrics tab to return (either \code{"cage"}, \code{"animal"}, or \code{"alpha"}).}
 
 \item{videostream}{Which video stream to return (note: for now, \code{"overlay"} is the default).}
 
 \item{url_base}{What URL base is used for the Envision® URL: NOTE: the default of \code{"https://app.murine.net/org/"} is from the original version of the app.}
-
-\item{widnowstart_h}{Hours after the start of the video for the window.}
 }
 \value{
 A \code{character} vector containing the JAX Envision® URL.
@@ -41,6 +43,6 @@ This function creates a URL for the JAX Envision® platform.
 URLs are useful for highlighting specific moments of video identified by an analysis.
 }
 \examples{
-make_envision_url()
+make_envision_url(1001, 1001, 1001, lubridate::ymd_hms("2024-06-12 07:45:00", tz = "US/Central"))
 }
 \keyword{Envision}

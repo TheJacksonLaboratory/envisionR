@@ -8,7 +8,7 @@
 #' @keywords Envision
 #' @export
 #' @examples
-#' weeks_postnatal_seq()
+#' weeks_postnatal_seq(dob = lubridate::ymd("2024-01-20"), n_weeks = 12)
 
 weeks_postnatal_seq <- function(dob, n_weeks) {
 

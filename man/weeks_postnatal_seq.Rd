@@ -19,6 +19,6 @@ This function computes a vector of dates that start each postnatal weeks after a
 This is often useful for axis legends.
 }
 \examples{
-weeks_postnatal_seq()
+weeks_postnatal_seq(dob = lubridate::ymd("2024-01-20"), n_weeks = 12)
 }
 \keyword{Envision}

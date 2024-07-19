@@ -13,7 +13,7 @@ list_tzones = function() {
   stopifnot(require(dplyr))
 
   # Grabbing the data frame
-  tzones = envisionR:::timezones |>
+  tzones = timezones_df |>
     dplyr::select(-assume, -override, -zone)
 
   return(tzones)

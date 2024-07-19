@@ -55,11 +55,11 @@ tz_override <- structure(list(tz_name = c("Etc/GMT+12", "US/Samoa", "US/Hawaii",
                                            1L, 1L, 1L, 1L, 1L, 1L, 1L)), class = "data.frame", row.names = c(NA,
                                                                                                              -40L))
 
-timezones = tz_raw |>
+timezones_df = tz_raw |>
   dplyr::left_join(tz_assume, by = c("tz_name", "utc_offset_h")) |>
   dplyr::left_join(tz_override, by = c("tz_name", "utc_offset_h")) |>
   dplyr::mutate(assume = ifelse(is.na(assume), 0, assume),
                 override = ifelse(is.na(override), 0, override)) |>
   as.data.frame()
 
-usethis::use_data(timezones, internal = TRUE, overwrite = TRUE)
+usethis::use_data(timezones_df, internal = TRUE, overwrite = TRUE)

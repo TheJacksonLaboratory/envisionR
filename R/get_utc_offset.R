@@ -8,7 +8,7 @@
 #' @keywords Envision
 #' @export
 #' @examples
-#' get_utc_offset()
+#' get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00", tz = "US/Pacific"))
 
 get_utc_offset = function(ts, as_numeric = FALSE) {
 
