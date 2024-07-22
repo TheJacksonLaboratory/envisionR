@@ -17,10 +17,8 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     dplyr,
-    hms,
     janitor,
     lubridate,
     readr,
     tibble,
-    tidyr,
-    ggplot2
+    hms

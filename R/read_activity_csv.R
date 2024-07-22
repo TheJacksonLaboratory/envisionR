@@ -29,7 +29,8 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 
   # Reading in raw data
   activity_data <- readr::read_csv(csv, show_col_types = FALSE) |>
-    janitor::clean_names()
+    janitor::clean_names() |>
+    tibble::as_tibble()
 
   # Starting by listing compatible time zones
   compatible_tzones <- activity_data |>
@@ -97,3 +98,33 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 
   return(activity_data)
 }
+
+#' Dummy JAX Envision® activity CSV lines formatted the same as exported activity data.
+#'
+#' A dataset containing four lines of fabricated JAX Envision® activity data.
+#'  These lines follow the format of a JAX Envision® activity CSV.
+#'  When read properly, the lines for cage-level data have raw column titles as follows:
+#'
+#'  \itemize{
+#'    \item \code{start}. the date and time at the start of the aggregation bin (in UTC).
+#'    \item \code{start_date_local}. the start date (in the time zone in which the data were collected).
+#'    \item \code{start_time_local}. the start time (in the time zone in which the data were collected).
+#'    \item \code{study_code}. a unique code for each study.
+#'    \item \code{aggregation_seconds}. the number of seconds aggregated to generate this dataset (3600 is 1 hour).
+#'    \item \code{group_name}. a user-defined group name, often used to label experimental groups of interest.
+#'    \item \code{cage_name}. the name of the cage that the data represent.
+#'    \item \code{animals_cage_quantity}. the number of animals in the cage, sometimes called cage density or occupancy.
+#'    \item \code{light_cycle}. whether the data were collected in the light or dark cycle.
+#'    \item \code{movement_mean_per_cage_cm_s_hour}. cage-level movement in cm/s for a specified period of time (1 hour in this example)
+#'    \item \code{wheel_occupancy_mean_per_cage_animals_hour}. amount of time spent on the wheel at the cage level.
+#'    \item \code{food_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the food hopper at the cage level.
+#'    \item \code{water_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the water bottles at the cage level.
+#'    \item \code{tzone}. time zone of the dataset.
+#'  }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name csv_lines
+#' @usage data(csv_lines)
+#' @format a character vector with 5 lines, the first line is a header.
+NULL
