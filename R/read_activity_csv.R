@@ -42,7 +42,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     dplyr::mutate(startlocal_utc = paste(start_date_local, start_time_local),
                   startlocal_utc = lubridate::ymd_hms(startlocal_utc,
                                                       tz = "UTC"),
-                  utc_offset_h = as.numeric(startlocal_utc - start)) |>
+                  utc_offset_h = round(as.numeric(startlocal_utc - start)), 0) |>
     dplyr::group_by(utc_offset_h) |>
     dplyr::mutate(min_starttime = min(start)) |>
     dplyr::select(utc_offset_h, min_starttime) |>
