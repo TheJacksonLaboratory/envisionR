@@ -9,8 +9,11 @@
 
 list_tzones = function() {
 
-  # Getting right libraries
+  # Getting dplyr library
   stopifnot(requireNamespace("dplyr", quietly = TRUE))
+
+  # Doing variable bindings
+  assume <- override <- zone <- NULL
 
   # Grabbing the data frame
   tzones = timezones_df |>

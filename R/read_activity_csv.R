@@ -27,6 +27,11 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
   stopifnot(requireNamespace("lubridate", quietly = TRUE))
   stopifnot(requireNamespace("tibble", quietly = TRUE))
 
+  # Doing variable bindings
+  start_date_local <- start_time_local <- startlocal_utc <-
+    start <- utc_offset_h <- min_starttime <- assume <- min_starttime_utc <-
+    tz_name <- is_dst <- tz_isdst <- override <- NULL
+
   # Reading in raw data
   activity_data <- readr::read_csv(csv, show_col_types = FALSE) |>
     janitor::clean_names() |>
