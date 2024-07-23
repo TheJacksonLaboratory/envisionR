@@ -9,15 +9,15 @@ require("hms")
 
 # Writing out a dummy CSV file
 tempcsv_1 = tempfile("testactivity", fileext = ".csv")
-writeLines(csv_lines, tempcsv_1)
+writeLines(activity_csv_example, tempcsv_1)
 
 # Writing out the CSV file that should throw an unambiguous time code error
-csv_lines_error = gsub("19:00:00","22:00:00",csv_lines)
+csv_lines_error = gsub("19:00:00","22:00:00",activity_csv_example)
 tempcsv_2 = tempfile("testactivity_error", fileext = ".csv")
 writeLines(csv_lines_error, tempcsv_2)
 
 # Making the data frame with variable types that should match the wrangled CSV file
-csv_out = read.csv(text = csv_lines) |>
+csv_out = read.csv(text = activity_csv_example) |>
   tibble::as_tibble() |>
   janitor::clean_names() |>
   dplyr::mutate(start = lubridate::ymd_hms(start, tz = "US/Pacific", quiet = TRUE),

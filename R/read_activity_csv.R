@@ -11,7 +11,7 @@
 #' @examples
 #' # Writing test CSV file
 #' activity_csv <- tempfile("testactivity", fileext = ".csv")
-#' readr::write_lines(csv_lines, file = activity_csv)
+#' readr::write_lines(activity_csv_example, file = activity_csv)
 #'
 #' # Reading in test CSV file
 #' activity <- read_activity_csv(csv = activity_csv, tz = "US/Pacific")
@@ -30,7 +30,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
   # Doing variable bindings
   start_date_local <- start_time_local <- startlocal_utc <-
     start <- utc_offset_h <- min_starttime <- assume <- min_starttime_utc <-
-    tz_name <- is_dst <- tz_isdst <- override <- NULL
+    tz_name <- is_dst <- tz_isdst <- NULL
 
   # Reading in raw data
   activity_data <- readr::read_csv(csv, show_col_types = FALSE) |>
@@ -70,16 +70,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     if (length(unique_tzs) == 1) {
       tz_assume <- unique_tzs
     } else {
-      unique_tzs_override <- probable_tzones |>
-        dplyr::filter(override == 1) |>
-        dplyr::pull(tz_name) |>
-        unique()
-      if (length(unique_tzs_override) == 1) {
-        tz_assume = unique_tzs_override
-      } else {
-        # Throwing an error if a time zone cannot be unambiguously assumed
-        stop("could not assume a time zone unambiguously.")
-      }
+      stop("could not assume a time zone unambiguously.")
     }
     activity_data <- activity_data |>
       dplyr::mutate(start = lubridate::with_tz(start, tzone = tz_assume),
@@ -111,7 +102,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 #'  When read properly, the lines for cage-level data have raw column titles as follows:
 #'
 #'  \itemize{
-#'    \item \code{start}. the date and time at the start of the aggregation bin (in UTC).
+#'    \item \code{start}. the date and time at the start of the aggregation bin (coerced from UTC to local time).
 #'    \item \code{start_date_local}. the start date (in the time zone in which the data were collected).
 #'    \item \code{start_time_local}. the start time (in the time zone in which the data were collected).
 #'    \item \code{study_code}. a unique code for each study.
@@ -129,7 +120,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 #'
 #' @docType data
 #' @keywords datasets
-#' @name csv_lines
-#' @usage data(csv_lines)
+#' @name activity_csv_example
+#' @usage data(activity_csv_example)
 #' @format a character vector with 5 lines, the first line is a header.
 NULL
