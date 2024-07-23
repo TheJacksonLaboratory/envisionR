@@ -43,6 +43,16 @@ test_that("throws error for improperly formatted start date", {
                "start date and end date should be formatted as YYYY-MM-DD.")
 })
 
+test_that("throws error for same lights-on and lights-off time", {
+  expect_error(lightdark_times(lights_on_time = "18:00",
+                               lights_off_time = "18:00",
+                               start_date = "2024-06-02",
+                               end_date = "2024-06-03",
+                               tzone="US/Pacific"),
+               "lights-on and lights-off must be different times.")
+})
+
+
 test_that("throws error for improperly formatted end date", {
   expect_error(lightdark_times(lights_on_time = "18:00",
                                lights_off_time = "06:00",
