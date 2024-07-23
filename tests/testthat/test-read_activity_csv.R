@@ -27,7 +27,7 @@ csv_out = read.csv(text = activity_csv_example) |>
                 aggregation_seconds = as.numeric(paste0(aggregation_seconds, ".0")),
                 group_name = as.character(group_name),
                 cage_name = as.character(cage_name),
-                animals_cage_quantity = as.numeric(paste0(animals_cage_quantity, ".0")),
+                animals_cage_quantity = as.integer(animals_cage_quantity),
                 light_cycle = as.character(light_cycle),
                 movement_mean_per_cage_cm_s_hour = as.numeric(movement_mean_per_cage_cm_s_hour),
                 wheel_occupancy_mean_per_cage_s_hour = as.numeric(wheel_occupancy_mean_per_cage_s_hour),

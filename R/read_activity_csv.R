@@ -33,7 +33,21 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     tz_name <- is_dst <- tz_isdst <- NULL
 
   # Reading in raw data
-  activity_data <- readr::read_csv(csv, show_col_types = FALSE) |>
+  activity_data <- readr::read_csv(csv,
+                                   col_types = list(start = readr::col_datetime(format = ""),
+                                                    start.date.local = readr::col_date(format = ""),
+                                                    start.time.local = readr::col_time(format = ""),
+                                                    study.code = readr::col_character(),
+                                                    aggregation.seconds = readr::col_double(),
+                                                    group.name = readr::col_character(),
+                                                    cage.name = readr::col_character(),
+                                                    animals.cage.quantity = readr::col_integer(),
+                                                    light.cycle = readr::col_character(),
+                                                    movement.mean.per_cage.cm_s.hour = readr::col_double(),
+                                                    wheel_occupancy.mean.per_cage.s.hour = readr::col_double(),
+                                                    food_occupancy.mean.per_cage.s.hour = readr::col_double(),
+                                                    water_occupancy.mean.per_cage.s.hour = readr::col_double()),
+                                   show_col_types = FALSE) |>
     janitor::clean_names() |>
     tibble::as_tibble()
 
