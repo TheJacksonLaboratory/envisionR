@@ -68,7 +68,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     # Attempting to automagically impute an assumed time zone if tz is NULL
     # Identifying all unique UTC offsets in the dataset
     # Then finding compatible assumed time zones
-    probable_tzones = compatible_tzones |>
+    probable_tzones <- compatible_tzones |>
       dplyr::filter(assume == 1) |>
       dplyr::ungroup() |>
       dplyr::mutate(tz_isdst = lubridate::dst(
