@@ -26,8 +26,6 @@ test_that("get_utc_offset() returns numeric for whole number daylight time", {
                               as_numeric = TRUE), -7)
 })
 
-
-
 test_that("get_utc_offset() returns character for decimal standard time", {
   expect_equal(get_utc_offset(lubridate::ymd_hms("2024-01-01 12:00:00",
                                                  tz = "Canada/Newfoundland"),
@@ -52,3 +50,10 @@ test_that("get_utc_offset() returns numeric for decimal daylight time", {
                               as_numeric = TRUE), -2.5)
 })
 
+test_that("get_utc_offset() works for a UTC time stamp passed to the function.", {
+  expect_equal(get_utc_offset(ts = lubridate::ymd_hms("2024-01-01 12:00:00",
+                                                      tz = "US/Pacific"),
+                              ts_utc = lubridate::ymd_hms("2024-01-01 20:00:00 UTC",
+                                                          tz = "UTC"),
+                              as_numeric = TRUE), -8)
+})

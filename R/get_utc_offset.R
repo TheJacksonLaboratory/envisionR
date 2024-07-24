@@ -10,7 +10,7 @@
 #' @examples
 #' get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00", tz = "US/Pacific"))
 
-get_utc_offset = function(ts, as_numeric = FALSE) {
+get_utc_offset = function(ts, ts_utc = NULL, as_numeric = FALSE) {
 
   # Throwing an error if the R installation does not include lubridate
   stopifnot(requireNamespace("lubridate", quietly = TRUE))
@@ -18,10 +18,15 @@ get_utc_offset = function(ts, as_numeric = FALSE) {
   # Throwing an error if timestamp is not a timepoint
   stopifnot(lubridate::is.timepoint(ts))
 
+  if (!is.null(ts_utc)) {
+    stopifnot(lubridate::is.timepoint(ts_utc))
+  } else {
+    ts_utc <- lubridate::with_tz(ts, tzone = "UTC")
+  }
+
   # Finding UTC time and using it to produce offset
-  utc_ts    <- lubridate::with_tz(ts, tzone = "UTC")
-  offset_hr <- lubridate::hour(ts) - lubridate::hour(utc_ts)
-  offset_mn <- lubridate::minute(ts) - lubridate::minute(utc_ts)
+  offset_hr <- round(lubridate::hour(ts) - lubridate::hour(ts_utc), 0)
+  offset_mn <- round(lubridate::minute(ts) - lubridate::minute(ts_utc), 0)
 
   # Getting character or numeric output
   if (as_numeric) {
