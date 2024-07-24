@@ -4,7 +4,7 @@
 \alias{get_utc_offset}
 \title{Get UTC Offset}
 \usage{
-get_utc_offset(ts, as_numeric = FALSE)
+get_utc_offset(ts, ts_utc = NULL, as_numeric = FALSE)
 }
 \arguments{
 \item{ts}{Time stamp in local time}
@@ -19,6 +19,11 @@ This function computes UTC offset for a given time point.
 Getting a UTC offset can be useful when daylight time starts or stops.
 }
 \examples{
+# Use with no second time stamp and an explicit time zone
 get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00", tz = "US/Pacific"))
+
+# Use with a second time stamp and no explicit time zone.
+get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00"),
+               ts_utc = lubridate::ymd_hms("2024-06-01 05:00:00"))
 }
 \keyword{Envision}
