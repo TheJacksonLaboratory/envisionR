@@ -15,14 +15,13 @@ test_that("a single reference time works", {
                  7891200, 7894800))
 })
 
-# test with only one reference time
+# test with two reference times and unequal raw time length
 test_that("an unequal amount of raw and reference times throws an error when there are 2+ reftimes", {
   expect_error(experiment_time_encoding(rawtimes = test_rawtimes,
                                         reftimes = test_reftimes[1:2],
                                         units = "seconds"),
                "rawtimes and reftimes are different lengths")
 })
-
 
 # seconds
 test_that("seconds with no offset works", {

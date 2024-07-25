@@ -26,6 +26,10 @@ experiment_time_encoding = function(rawtimes,
   # Ensuring that the reftime value is numeric
   stopifnot(is.numeric(offset))
 
+  # Checking that the argument for units is in the list
+  stopifnot(units %in% c("seconds","minutes","hours",
+                         "days","weeks","months","years"))
+
   # Ensuring that reftimes matches rawtimes
   if (length(reftimes) == 1 & length(rawtimes) != 1) {
     reftimes = rep(reftimes, times = length(rawtimes))
