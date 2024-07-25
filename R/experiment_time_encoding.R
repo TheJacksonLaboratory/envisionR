@@ -61,6 +61,7 @@ experiment_time_encoding = function(rawtimes,
                                 604800)
   } else if (units == "months") {
     # 1 month = (365.25 * 24 * 60 * 60) / 12 = 2629800 seconds
+    # An average month is 30.4375 days or 30 days 10 hours 30 minutes
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 2629800)
   } else if (units == "years") {
