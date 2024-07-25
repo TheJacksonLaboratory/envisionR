@@ -36,5 +36,8 @@ activity <- read_activity_csv(csv = activity_csv, tz = "US/Pacific")
 
 # Glimpsing test activity CSV file
 dplyr::glimpse(activity)
+
+# Removing the activity file
+file.remove(activity_csv)
 }
 \keyword{Envision}

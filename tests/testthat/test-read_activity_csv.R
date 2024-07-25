@@ -64,3 +64,7 @@ test_that("read_activity_csv() throws an error when multiple irreconcilable UTC 
   expect_error(read_activity_csv(tempcsv_2),
                regexp = "^could not assume a time zone unambiguously.$")
 })
+
+# Removing temp files
+file.remove(tempcsv_1)
+file.remove(tempcsv_2)

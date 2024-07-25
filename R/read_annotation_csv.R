@@ -40,6 +40,9 @@
 #'
 #' # Glimpsing annotation CSV
 #' dplyr::glimpse(annotation)
+#'
+#' # Removing the annotation temp file
+#' file.remove(annotation_csv)
 
 read_annotation_csv <- function(csv, tz = NULL) {
 

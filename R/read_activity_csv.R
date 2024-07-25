@@ -18,6 +18,9 @@
 #'
 #' # Glimpsing test activity CSV file
 #' dplyr::glimpse(activity)
+#'
+#' # Removing the activity file
+#' file.remove(activity_csv)
 
 read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
                               metrics = c("cage","animal")) {

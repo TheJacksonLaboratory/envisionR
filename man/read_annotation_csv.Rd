@@ -50,5 +50,8 @@ annotation <- read_annotation_csv(csv = annotation_csv, tz = "US/Pacific")
 
 # Glimpsing annotation CSV
 dplyr::glimpse(annotation)
+
+# Removing the annotation temp file
+file.remove(annotation_csv)
 }
 \keyword{Envision}
