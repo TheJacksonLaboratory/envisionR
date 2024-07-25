@@ -37,24 +37,30 @@ experiment_time_encoding = function(rawtimes,
 
   # Getting different numbers depending upon scale
   if (units == "seconds") {
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                1)
+    # 1 second is the interval unit encoding
+    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes))
   } else if (units == "minutes") {
+    # 1 minute = 60 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 60)
   } else if (units == "hours") {
+    # 1 hour = 60 * 60 = 3600 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 3600)
   } else if (units == "days") {
+    # 1 day = 24 * 60 * 60 = 86400 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 86400)
   } else if (units == "weeks") {
+    # 1 week = 7 * 24 * 60 * 60 = 604800 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 604800)
   } else if (units == "months") {
+    # 1 month = (365.25 * 24 * 60 * 60) / 12 = 2629800 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 2629800)
   } else if (units == "years") {
+    # 1 year = 365.25 * 24 * 60 * 60 = 31557600 seconds
     newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
                                 31557600)
   }
