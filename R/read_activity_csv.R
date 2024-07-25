@@ -9,12 +9,14 @@
 #' @keywords Envision
 #' @export
 #' @examples
-#' # Writing test CSV file
+#' # Writing test CSV file for an example
 #' activity_csv <- tempfile("testactivity", fileext = ".csv")
 #' readr::write_lines(activity_csv_example, file = activity_csv)
 #'
-#' # Reading in test CSV file
+#' # Reading in test activity CSV file
 #' activity <- read_activity_csv(csv = activity_csv, tz = "US/Pacific")
+#'
+#' # Glimpsing test activity CSV file
 #' dplyr::glimpse(activity)
 
 read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,

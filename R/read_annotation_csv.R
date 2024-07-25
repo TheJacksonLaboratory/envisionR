@@ -37,6 +37,8 @@
 #'
 #' # Reading in test CSV file
 #' annotation <- read_annotation_csv(csv = annotation_csv, tz = "US/Pacific")
+#'
+#' # Glimpsing annotation CSV
 #' dplyr::glimpse(annotation)
 
 read_annotation_csv <- function(csv, tz = NULL) {

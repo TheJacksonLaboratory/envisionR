@@ -47,6 +47,8 @@ readr::write_lines(annotation_csv_example, file = annotation_csv)
 
 # Reading in test CSV file
 annotation <- read_annotation_csv(csv = annotation_csv, tz = "US/Pacific")
+
+# Glimpsing annotation CSV
 dplyr::glimpse(annotation)
 }
 \keyword{Envision}
