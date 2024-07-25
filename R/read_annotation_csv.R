@@ -4,6 +4,30 @@
 #' @param csv File path for the Envision® annotation CSV.
 #' @param tz Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.
 #' @returns A \code{tibble} with annotation data optimally formatted for downstream analysis.
+#'
+#' When read properly, the lines for annotation data have column titles as follows:
+#'
+#'  \itemize{
+#'    \item \code{id}. the ID of the annotation, usually a number.
+#'    \item \code{created}. the date and time the annotation was created (coerced from UTC to local time).
+#'    \item \code{created_date_local}. the date the annotation was created (in the time zone in which the data were collected).
+#'    \item \code{created_time_local}. the time the annotation was created (in the time zone in which the data were collected).
+#'    \item \code{pin_start_date_local}. the date of the start of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{pin_start_time_local}. the time of the start of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{pin_end_date_local}. the date of the end of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{pin_end_time_local}. the time of the end of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{study_code}. a unique code for each study.
+#'    \item \code{group_name}. a user-defined group name, often used to label experimental groups of interest.
+#'    \item \code{cage_name}. the name of the cage that the data represent.
+#'    \item \code{creator}. the name of the user or bot who created the annotation.
+#'    \item \code{contents}. the annotation.
+#'    \item \code{reply_to}. if the annotation is a reply, the name of the user or bot to whom the reply is directed.
+#'    \item \code{hashtags}. any hashtags in the annotation.
+#'    \item \code{pin_start_time}. the date and time of the start of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{pin_end_time}. athe date and time of the end of the period to which the annotation refers (in the time zone in which the data were collected).
+#'    \item \code{tzone}. time zone of the dataset.
+#'  }
+#'
 #' @keywords Envision
 #' @export
 #' @examples
@@ -125,7 +149,7 @@ read_annotation_csv <- function(csv, tz = NULL) {
 #'
 #' A dataset containing four lines of fabricated JAX Envision® annotation data.
 #'  These lines follow the format of a JAX Envision® annotation CSV.
-#'  When read properly, the lines for cage-level data have raw column titles as follows:
+#'  When read properly, the lines for annotation data have column titles as follows:
 #'
 #'  \itemize{
 #'    \item \code{id}. the ID of the annotation, usually a number.
