@@ -2,8 +2,9 @@
 #'
 #' This function computes UTC offset for a given time point.
 #' Getting a UTC offset can be useful when daylight time starts or stops.
-#' @param ts Time stamp in local time
-#' @param as_numeric Whether UTC offset should be returned as a \code{numeric} (default: \code{FALSE}).
+#' @param ts time stamp in local time
+#' @param ts_utc time stamp in UTC time (default: \code{NULL})
+#' @param as_numeric whether UTC offset should be returned as a \code{numeric} (default: \code{FALSE}).
 #' @returns A \code{character} or \code{numeric} UTC offset.
 #' @keywords Envision
 #' @export
@@ -30,8 +31,11 @@ get_utc_offset = function(ts, ts_utc = NULL, as_numeric = FALSE) {
   }
 
   # Finding UTC time and using it to produce offset
-  offset_hr <- round(lubridate::hour(ts) - lubridate::hour(ts_utc), 0)
-  offset_mn <- round(lubridate::minute(ts) - lubridate::minute(ts_utc), 0)
+  offset_hr <- lubridate::as.period(lubridate::force_tz(ts, tzone = "UTC") -
+                                      ts_utc) %/% lubridate::hours(1)
+  offset_mn <- lubridate::as.period(lubridate::force_tz(ts, tzone = "UTC") -
+                                      ts_utc) %% lubridate::hours(1) %/%
+    lubridate::minutes(1)
 
   # Getting character or numeric output
   if (as_numeric) {

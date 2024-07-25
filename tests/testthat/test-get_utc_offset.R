@@ -57,3 +57,15 @@ test_that("get_utc_offset() works for a UTC time stamp passed to the function.",
                                                           tz = "UTC"),
                               as_numeric = TRUE), -8)
 })
+
+utc_datetimes = ymd_hms(paste0("2024-01-20 ",
+                              formatC(0:23, width=2, flag="0"),
+                              ":00:00"), tz = "UTC")
+pacific_datetimes = with_tz(utc_datetimes, tzone = "US/Pacific")
+
+test_that("get_utc_offset() works for a 24 hours of UTC time stamps passed to the function.", {
+  expect_equal(get_utc_offset(ts = pacific_datetimes,
+                              ts_utc = pacific_datetimes,
+                              as_numeric = TRUE),
+               rep(-8, times = 24))
+})

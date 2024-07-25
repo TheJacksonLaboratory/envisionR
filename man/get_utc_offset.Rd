@@ -7,9 +7,11 @@
 get_utc_offset(ts, ts_utc = NULL, as_numeric = FALSE)
 }
 \arguments{
-\item{ts}{Time stamp in local time}
+\item{ts}{time stamp in local time}
 
-\item{as_numeric}{Whether UTC offset should be returned as a \code{numeric} (default: \code{FALSE}).}
+\item{ts_utc}{time stamp in UTC time (default: \code{NULL})}
+
+\item{as_numeric}{whether UTC offset should be returned as a \code{numeric} (default: \code{FALSE}).}
 }
 \value{
 A \code{character} or \code{numeric} UTC offset.
