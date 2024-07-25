@@ -1,20 +1,20 @@
-#' Experiment time encoding
+#' Relative time encoding
 #'
-#' This function uses the date-time information in an annotation or an activity data set to compute experimental time.
-#' Experimental time is useful in aligning disparate studies and for re-encoding by something like date of birth.
+#' This function uses the date-time information in an annotation or an activity data set to compute relative time.
+#' Relative time is useful in aligning disparate studies and for re-encoding by something like date of birth.
 #'
-#' @param rawtimes raw times to be changed to experiment times.
-#' @param reftimes reference time or times for an experiment time encoding. Either length 1 or the same length as \code{rawtimes}.
-#' @param units units for the experiment time encoding (hours, days, weeks, months, or years).
-#' @param offset value given for the offset from 0 in the experiment in the same units as \code{units} (default: \code{0}).
-#' @returns a \code{vector} of experiment time in the given units.
+#' @param rawtimes raw times to be changed to relative times.
+#' @param reftimes reference time or times for a relative time encoding. Either length 1 or the same length as \code{rawtimes}.
+#' @param units units for the relative time encoding (hours, days, weeks, months, or years).
+#' @param offset value given for the offset from 0 in the relative in the same units as \code{units} (default: \code{0}).
+#' @returns a \code{vector} of relative time in the given units.
 #' @keywords Envision
 
-experiment_time_encoding = function(rawtimes,
-                                    reftimes,
-                                    units = c("seconds","minutes","hours",
-                                              "days","weeks","months","years"),
-                                    offset = 0) {
+reltime = function(rawtimes,
+                   reftimes,
+                   units = c("seconds","minutes","hours",
+                             "days","weeks","months","years"),
+                   offset = 0) {
 
   # Ensuring essential packages are in the namespace
   stopifnot(requireNamespace("lubridate", quietly = TRUE))
@@ -71,8 +71,8 @@ experiment_time_encoding = function(rawtimes,
   }
 
   # Adding the reference time value
-  newtimes = newtimes_raw + offset
+  reltimes = newtimes_raw + offset
 
   # Returning the result
-  return(newtimes)
+  return(reltimes)
 }
