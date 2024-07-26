@@ -43,6 +43,6 @@ This function creates a URL for the JAX Envision® platform.
 URLs are useful for highlighting specific moments of video identified by an analysis.
 }
 \examples{
-make_envision_url(1001, 1001, 1001, lubridate::ymd_hms("2024-06-12 07:45:00", tz = "US/Central"))
+make_envision_url(1001, 1001, 1001, as.POSIXct("2024-06-12 07:45:00", tz = "US/Central"))
 }
 \keyword{Envision}

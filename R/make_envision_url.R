@@ -15,19 +15,17 @@
 #' @keywords Envision
 #' @export
 #' @examples
-#' make_envision_url(1001, 1001, 1001, lubridate::ymd_hms("2024-06-12 07:45:00", tz = "US/Central"))
+#' make_envision_url(1001, 1001, 1001, as.POSIXct("2024-06-12 07:45:00", tz = "US/Central"))
 
 make_envision_url = function(org, study, cage, vidstart,
                              windowstart_h = 12, windowend_h = 12,
                              metricstab = "cage", videostream = "overlay",
                              url_base = "https://app.murine.net/org/") {
-  # Ensuring required packages are present
-  stopifnot(requireNamespace("lubridate", quietly = TRUE))
 
   # Checking each argument
   stopifnot(metricstab %in% c("cage","animal","alpha"))
   stopifnot(videostream %in% c("overlay"))
-  stopifnot(lubridate::is.instant(vidstart))
+  stopifnot(inherits(vidstart, "POSIXct"))
   stopifnot(is.numeric(org))
   stopifnot(is.numeric(study))
   stopifnot(is.numeric(cage))
