@@ -16,14 +16,11 @@ reltime = function(rawtimes,
                              "days","weeks","months","years"),
                    offset = 0) {
 
-  # Ensuring essential packages are in the namespace
-  stopifnot(requireNamespace("lubridate", quietly = TRUE))
+  # Ensuring that times are all POSIXct
+  stopifnot(inherits(rawtimes, "POSIXct"))
+  stopifnot(inherits(reftimes, "POSIXct"))
 
-  # Ensuring that times are all instants
-  stopifnot(lubridate::is.instant(rawtimes))
-  stopifnot(lubridate::is.instant(reftimes))
-
-  # Ensuring that the reftime value is numeric
+  # Ensuring that the offset value is numeric
   stopifnot(is.numeric(offset))
 
   # Checking that the argument for units is in the list
@@ -39,35 +36,30 @@ reltime = function(rawtimes,
     stop("rawtimes and reftimes are different lengths")
   }
 
+  diff_seconds <- as.double(rawtimes) - as.double(reftimes)
   # Getting different numbers depending upon scale
   if (units == "seconds") {
     # 1 second is the interval unit encoding
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes))
+    newtimes_raw <- diff_seconds
   } else if (units == "minutes") {
     # 1 minute = 60 seconds
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                60)
+    newtimes_raw <- diff_seconds / 60
   } else if (units == "hours") {
     # 1 hour = 60 * 60 = 3600 seconds
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                3600)
+    newtimes_raw <- diff_seconds / 3600
   } else if (units == "days") {
     # 1 day = 24 * 60 * 60 = 86400 seconds
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                86400)
+    newtimes_raw <- diff_seconds / 86400
   } else if (units == "weeks") {
     # 1 week = 7 * 24 * 60 * 60 = 604800 seconds
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                604800)
+    newtimes_raw <- diff_seconds / 604800
   } else if (units == "months") {
     # 1 month = (365.25 * 24 * 60 * 60) / 12 = 2629800 seconds
     # An average month is 30.4375 days or 30 days 10 hours 30 minutes
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                2629800)
+    newtimes_raw <- diff_seconds / 2629800
   } else if (units == "years") {
     # 1 year = 365.25 * 24 * 60 * 60 = 31557600 seconds
-    newtimes_raw <- as.double(lubridate::interval(reftimes, rawtimes) /
-                                31557600)
+    newtimes_raw <- diff_seconds / 31557600
   }
 
   # Adding the reference time value

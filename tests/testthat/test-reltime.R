@@ -1,9 +1,7 @@
 # Unit tests for the reltime() function.
 
-require(lubridate)
-
-test_rawtimes = ymd_hms(paste0("2024-04-01 0",1:9, ":00:00"), tz = "UTC")
-test_reftime  = ymd_hms("2024-01-01 00:00:00", tz = "UTC")
+test_rawtimes = as.POSIXct(paste0("2024-04-01 0",1:9, ":00:00"), tz = "UTC")
+test_reftime  = as.POSIXct("2024-01-01 00:00:00", tz = "UTC")
 test_reftimes = rep(test_reftime, times = length(test_rawtimes))
 test_answer_seconds = c(7866000, 7869600, 7873200,
                         7876800, 7880400, 7884000,
