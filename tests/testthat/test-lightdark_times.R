@@ -1,6 +1,7 @@
 # unit tests for the function lightdark_times()
 
 require("tibble")
+require("lubridate")
 
 test_that("works with lights-off AFTER lights-on", {
   expect_equal(lightdark_times(lights_on_time = "06:00",
