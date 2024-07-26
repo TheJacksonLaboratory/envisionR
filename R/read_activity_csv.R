@@ -29,7 +29,6 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
   stopifnot(requireNamespace("readr", quietly = TRUE))
   stopifnot(requireNamespace("janitor", quietly = TRUE))
   stopifnot(requireNamespace("dplyr", quietly = TRUE))
-  stopifnot(requireNamespace("lubridate", quietly = TRUE))
   stopifnot(requireNamespace("tibble", quietly = TRUE))
 
   # Doing variable bindings
@@ -58,10 +57,9 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
 
   # Starting by listing compatible time zones
   compatible_tzones <- activity_data |>
-    dplyr::mutate(startlocal_utc = paste(start_date_local, start_time_local),
-                  startlocal_utc = lubridate::ymd_hms(startlocal_utc,
-                                                      tz = "UTC"),
-                  utc_offset_h = round(as.numeric(startlocal_utc - start)), 0) |>
+    dplyr::mutate(utc_offset_h = get_utc_offset(as.POSIXct(paste(start_date_local,
+                                                                 start_time_local)),
+                                                start, as_numeric = TRUE)) |>
     dplyr::group_by(utc_offset_h) |>
     dplyr::mutate(min_starttime = min(start)) |>
     dplyr::select(utc_offset_h, min_starttime) |>
@@ -76,8 +74,15 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
     probable_tzones <- compatible_tzones |>
       dplyr::filter(assume == 1) |>
       dplyr::ungroup() |>
-      dplyr::mutate(tz_isdst = lubridate::dst(
-        lubridate::with_tz(min_starttime_utc, tzone = tz_name))) |>
+      dplyr::mutate(tz_isdst = FALSE) |>
+      as.data.frame()
+
+    for (i in seq_len(nrow(probable_tzones))) {
+      probable_tzones[i,"tz_isdst"] <- as.POSIXlt(probable_tzones[i,"min_starttime_utc"],
+                                                  probable_tzones[i,"tz_name"])$isdst == 1
+    }
+
+    probable_tzones <- probable_tzones |>
       dplyr::filter(is_dst == tz_isdst)
 
     # Getting unique time zones that are assumed.
@@ -92,7 +97,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
       stop("could not assume a time zone unambiguously.")
     }
     activity_data <- activity_data |>
-      dplyr::mutate(start = lubridate::with_tz(start, tzone = tz_assume),
+      dplyr::mutate(start = as.POSIXct(start, tz = tz_assume),
                     tzone = tz_assume)
     # Throwing a warning if
     warning(paste0("Assuming time zone: ", tz_assume,
@@ -100,7 +105,7 @@ read_activity_csv <- function(csv, tz = NULL, occupancy_normalize = FALSE,
   } else {
     if (tz %in% timezones_df$tz_name) {
       activity_data <- activity_data |>
-        dplyr::mutate(start = lubridate::with_tz(start, tzone = tz),
+        dplyr::mutate(start = as.POSIXct(start, tz = tz),
                       tzone = tz)
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
         warning(paste("UTC offset for the", tz,

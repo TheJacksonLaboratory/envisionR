@@ -4,7 +4,6 @@
 require("tibble")
 require("janitor")
 require("dplyr")
-require("lubridate")
 require("hms")
 
 # Writing out a dummy CSV file
@@ -20,8 +19,8 @@ writeLines(csv_lines_error, tempcsv_2)
 csv_out = read.csv(text = activity_csv_example) |>
   tibble::as_tibble() |>
   janitor::clean_names() |>
-  dplyr::mutate(start = lubridate::ymd_hms(start, tz = "US/Pacific", quiet = TRUE),
-                start_date_local = lubridate::ymd(start_date_local),
+  dplyr::mutate(start = as.POSIXct(as.POSIXct(start, tz = "UTC"), tz = "US/Pacific"),
+                start_date_local = as.Date(start_date_local),
                 start_time_local = hms::as_hms(start_time_local),
                 study_code = as.character(study_code),
                 aggregation_seconds = as.numeric(paste0(aggregation_seconds, ".0")),
