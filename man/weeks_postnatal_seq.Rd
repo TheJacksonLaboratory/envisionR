@@ -4,12 +4,14 @@
 \alias{weeks_postnatal_seq}
 \title{Make a sequence of weeks postnatal}
 \usage{
-weeks_postnatal_seq(dob, n_weeks)
+weeks_postnatal_seq(dob, n_weeks, quiet = FALSE)
 }
 \arguments{
-\item{dob}{Date of birth of the animal in a \code{ymd} format.}
+\item{dob}{Date of birth of the animal in a \code{Date} format.}
 
 \item{n_weeks}{Number of weeks as a \code{numeric}.}
+
+\item{quiet}{\code{logical} indicating whether or not to suppress errors (default: \code{FALSE})}
 }
 \value{
 A named vector of dates where the names are the postnatal weeks.
@@ -19,6 +21,6 @@ This function computes a vector of dates that start each postnatal weeks after a
 This is often useful for axis legends.
 }
 \examples{
-weeks_postnatal_seq(dob = lubridate::ymd("2024-01-20"), n_weeks = 12)
+weeks_postnatal_seq(dob = as.Date("2024-01-20"), n_weeks = 12)
 }
 \keyword{Envision}
