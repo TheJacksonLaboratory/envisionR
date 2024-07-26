@@ -22,10 +22,10 @@ Getting a UTC offset can be useful when daylight time starts or stops.
 }
 \examples{
 # Use with no second time stamp and an explicit time zone
-get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00", tz = "US/Pacific"))
+get_utc_offset(ts = as.POSIXct("2024-06-01 12:00:00", tzone = "US/Pacific"))
 
 # Use with a second time stamp and no explicit time zone.
-get_utc_offset(ts = lubridate::ymd_hms("2024-06-01 12:00:00"),
-               ts_utc = lubridate::ymd_hms("2024-06-01 05:00:00"))
+get_utc_offset(ts = as.POSIXct("2024-06-01 12:00:00"),
+               ts_utc = as.POSIXct("2024-06-01 05:00:00"))
 }
 \keyword{Envision}
