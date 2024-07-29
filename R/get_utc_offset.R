@@ -35,11 +35,11 @@ get_utc_offset = function(ts, ts_utc = NULL, as_numeric = FALSE) {
 
   # Finding UTC time and using it to produce offset
   offset_hr <- abs(diff_secs) %/% 3600 * sign(diff_secs)
-  offset_mn <- diff_secs %% 3600 %/% 60
+  offset_mn <- abs(diff_secs) %% 3600 %/% 60 * sign(diff_secs)
 
   # Getting character or numeric output
   if (as_numeric) {
-    offset <- offset_hr + sign(diff_secs) * offset_mn / 60
+    offset <- offset_hr + offset_mn / 60
   } else {
     offset <- paste0(formatC(offset_hr, width = 3, flag = "0+"), ":",
                      formatC(abs(offset_mn), width = 2, flag = "0"))
