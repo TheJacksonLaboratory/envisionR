@@ -34,6 +34,6 @@ lightdark_times(lights_on_time = "06:00",
                 lights_off_time = "18:00",
                 start_date = "2024-06-02",
                 end_date = "2024-06-03",
-                tzone="US/Pacific")
+                tzone = "US/Pacific")
 }
 \keyword{Envision}
