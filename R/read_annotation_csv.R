@@ -56,26 +56,28 @@ read_annotation_csv <- function(csv, tz = NULL) {
   created <- created_date_local <- created_time_local <-
     createdlocal_utc <- utc_offset_h <- min_createdtime <- assume <-
     min_createdtime_utc <- pin_end_date_local <- pin_end_time_local <-
-    pin_start_time_local <- tz_isdst <- is_dst <-
+    pin_start_time_local <- tz_isdst <- is_dst <- annotation_csv_version <-
     pin_start_date_local <- tz_name <- NULL
+
+  # Looking for a version of the annotation CSV
+  first10_csv = base::readLines(csv, n = 10)
+  annotation_csv_version <- grep("[Vv]ersion",
+                                 first10_csv,
+                                 value = TRUE)
+
+  if (length(annotation_csv_version) == 0) {
+    annotation_csv_version = "v0.0.0.9000"
+  } else {
+    annotation_csv_version = paste0("v",
+                                    gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
+                                         "\\1", annotation_csv_version))
+  }
+
+  annotation_cols_def = envisionR::csv_column_defs[["annotation"]][[annotation_csv_version]]
 
   # Reading in raw data
   annotation_data <- readr::read_csv(csv,
-                                     col_types = list(ID = readr::col_double(),
-                                                      created = readr::col_datetime(format = ""),
-                                                      created_date.local = readr::col_date(format = ""),
-                                                      created_time.local = readr::col_time(format = ""),
-                                                      pin_start_date.local = readr::col_date(format = ""),
-                                                      pin_start_time.local = readr::col_time(format = ""),
-                                                      pin_end_date.local = readr::col_date(format = ""),
-                                                      pin_end_time.local = readr::col_time(format = ""),
-                                                      study_code = readr::col_character(),
-                                                      group_name = readr::col_character(),
-                                                      cage_name = readr::col_character(),
-                                                      creator = readr::col_character(),
-                                                      contents = readr::col_character(),
-                                                      reply_to = readr::col_character(),
-                                                      hashtags = readr::col_character()),
+                                     col_types = annotation_cols_def,
                                      show_col_types = FALSE) |>
     janitor::clean_names() |>
     tibble::as_tibble()

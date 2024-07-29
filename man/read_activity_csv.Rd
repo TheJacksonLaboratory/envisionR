@@ -4,21 +4,16 @@
 \alias{read_activity_csv}
 \title{A Function to Read JAX Envision® activity CSVs}
 \usage{
-read_activity_csv(
-  csv,
-  tz = NULL,
-  occupancy_normalize = FALSE,
-  metrics = c("cage", "animal")
-)
+read_activity_csv(csv, tz = NULL, metrics = NULL)
 }
 \arguments{
 \item{csv}{File path for the Envision® CSV.}
 
 \item{tz}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
 
-\item{occupancy_normalize}{Should the function normalize activity by cage occupancy? Default: \code{FALSE}.}
-
-\item{metrics}{Should the function expect cage or animal level activity metrics? Default: \code{"cage"}}
+\item{metrics}{Should the function expect cage (\code{"cage"}) or animal
+(\code{"animal"}) level activity metrics? Default: \code{NULL} tries to
+identify whether the csv is animal or cage level.}
 }
 \value{
 A \code{tibble} with experimental data optimally formatted for downstream analysis.
