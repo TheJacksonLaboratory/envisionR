@@ -50,7 +50,6 @@ read_annotation_csv <- function(csv, tz = NULL) {
   stopifnot(requireNamespace("readr", quietly = TRUE))
   stopifnot(requireNamespace("janitor", quietly = TRUE))
   stopifnot(requireNamespace("dplyr", quietly = TRUE))
-  stopifnot(requireNamespace("lubridate", quietly = TRUE))
   stopifnot(requireNamespace("tibble", quietly = TRUE))
 
   # Doing variable bindings
@@ -83,10 +82,9 @@ read_annotation_csv <- function(csv, tz = NULL) {
 
   # Starting by listing compatible time zones
   compatible_tzones <- annotation_data |>
-    dplyr::mutate(createdlocal_utc = paste(created_date_local, created_time_local),
-                  createdlocal_utc = lubridate::ymd_hms(createdlocal_utc,
-                                                        tz = "UTC", quiet = TRUE),
-                  utc_offset_h = round(as.numeric(createdlocal_utc - created), 0)) |>
+    dplyr::mutate(utc_offset_h = get_utc_offset(as.POSIXct(paste(created_date_local,
+                                                                 created_time_local)),
+                                                created, as_numeric = TRUE)) |>
     dplyr::group_by(utc_offset_h) |>
     dplyr::mutate(min_createdtime = min(created)) |>
     dplyr::select(utc_offset_h, min_createdtime) |>
@@ -98,10 +96,18 @@ read_annotation_csv <- function(csv, tz = NULL) {
     # Attempting to automagically impute an assumed time zone if tz is NULL
     # Identifying all unique UTC offsets in the dataset
     # Then finding compatible assumed time zones
-    probable_tzones = compatible_tzones |>
+    probable_tzones <- compatible_tzones |>
       dplyr::filter(assume == 1) |>
       dplyr::ungroup() |>
-      dplyr::mutate(tz_isdst = lubridate::dst(lubridate::with_tz(min_createdtime_utc, tzone = tz_name))) |>
+      dplyr::mutate(tz_isdst = FALSE) |>
+      as.data.frame()
+
+    for (i in seq_len(nrow(probable_tzones))) {
+      probable_tzones[i,"tz_isdst"] <- as.POSIXlt(probable_tzones[i,"min_createdtime_utc"],
+                                                  probable_tzones[i,"tz_name"])$isdst == 1
+    }
+
+    probable_tzones <- probable_tzones |>
       dplyr::filter(is_dst == tz_isdst)
 
     # Getting unique time zones that are assumed.
@@ -116,13 +122,13 @@ read_annotation_csv <- function(csv, tz = NULL) {
       stop("could not assume a time zone unambiguously.")
     }
     annotation_data <- annotation_data |>
-      dplyr::mutate(created = lubridate::with_tz(created, tzone = tz_assume),
-                    pin_start_time = lubridate::ymd_hms(paste(as.character(pin_start_date_local),
+      dplyr::mutate(created = as.POSIXct(created, tzone = tz_assume, optional = TRUE),
+                    pin_start_time = as.POSIXct(paste(as.character(pin_start_date_local),
                                                    as.character(pin_start_time_local)),
-                                             tz = tz_assume, quiet = TRUE),
-                    pin_end_time = lubridate::ymd_hms(paste(as.character(pin_end_date_local),
+                                             tz = tz_assume, optional = TRUE),
+                    pin_end_time = as.POSIXct(paste(as.character(pin_end_date_local),
                                                  as.character(pin_end_time_local)),
-                                             tz = tz_assume, quiet = TRUE),
+                                             tz = tz_assume, optional = TRUE),
                     tzone = tz_assume)
     # Throwing a warning if stated time zone is not present in assumed time zones
     warning(paste0("Assuming time zone: ", tz_assume,
@@ -130,13 +136,13 @@ read_annotation_csv <- function(csv, tz = NULL) {
   } else {
     if (tz %in% timezones_df$tz_name) {
       annotation_data <- annotation_data |>
-        dplyr::mutate(created = lubridate::with_tz(created, tzone = tz),
-                      pin_start_time = lubridate::ymd_hms(paste(as.character(pin_start_date_local),
-                                                                as.character(pin_start_time_local)),
-                                                          tz = tz, quiet = TRUE),
-                      pin_end_time = lubridate::ymd_hms(paste(as.character(pin_end_date_local),
-                                                              as.character(pin_end_time_local)),
-                                                        tz = tz, quiet = TRUE),
+        dplyr::mutate(created = as.POSIXct(created, tz = tz),
+                      pin_start_time = as.POSIXct(paste(as.character(pin_start_date_local),
+                                                        as.character(pin_start_time_local)),
+                                                          tz = tz, optional = TRUE),
+                      pin_end_time = as.POSIXct(paste(as.character(pin_end_date_local),
+                                                      as.character(pin_end_time_local)),
+                                                        tz = tz, optional = TRUE),
                       tzone = tz)
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
         warning(paste("UTC offset for the", tz,

@@ -4,7 +4,6 @@
 require("tibble")
 require("janitor")
 require("dplyr")
-require("lubridate")
 require("hms")
 
 # Writing out a dummy CSV file
@@ -21,12 +20,13 @@ csv_out = read.csv(text = annotation_csv_example) |>
   tibble::as_tibble() |>
   janitor::clean_names() |>
   dplyr::mutate(id = as.numeric(paste0(as.character(id), ".0")),
-                created = lubridate::ymd_hms(created, tz = "US/Pacific", quiet = TRUE),
-                created_date_local = lubridate::ymd(created_date_local),
+                created = as.POSIXct(as.POSIXct(created, tz = "UTC", optional = TRUE),
+                                     tz = "US/Pacific", optional = TRUE),
+                created_date_local = as.Date(created_date_local),
                 created_time_local = hms::as_hms(created_time_local),
-                pin_start_date_local = lubridate::ymd(pin_start_date_local),
+                pin_start_date_local = as.Date(pin_start_date_local),
                 pin_start_time_local = hms::as_hms(pin_start_time_local),
-                pin_end_date_local = lubridate::ymd(pin_end_date_local),
+                pin_end_date_local = as.Date(pin_end_date_local),
                 pin_end_time_local = hms::as_hms(pin_end_time_local),
                 study_code = as.character(study_code),
                 group_name = as.character(group_name),
@@ -35,12 +35,13 @@ csv_out = read.csv(text = annotation_csv_example) |>
                 contents = as.character(contents),
                 reply_to = as.character(reply_to),
                 hashtags = as.character(hashtags),
-                pin_start_time = lubridate::ymd_hms(paste(as.character(pin_start_date_local),
+                pin_start_time = as.POSIXct(paste(as.character(pin_start_date_local),
                                                           as.character(pin_start_time_local)),
-                                                    tz = "US/Pacific", quiet = TRUE),
-                pin_end_time = lubridate::ymd_hms(paste(as.character(pin_end_date_local),
-                                                        as.character(pin_end_time_local)),
-                                                  tz = "US/Pacific", quiet = TRUE),
+                                                       tz = "US/Pacific", optional = TRUE),
+                pin_end_time = as.POSIXct(paste(as.character(pin_end_date_local),
+                                                           as.character(pin_end_time_local)),
+                                                  tz = "US/Pacific",
+                                          optional = TRUE),
                 tzone = "US/Pacific") |>
   dplyr::mutate(created_time_local = hms::as_hms(round(created_time_local, 0)))
 
