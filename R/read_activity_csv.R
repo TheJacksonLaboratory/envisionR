@@ -140,17 +140,12 @@ read_activity_csv <- function(csv, tz = NULL,
     } else {
       stop("could not assume a time zone unambiguously.")
     }
-    activity_data <- activity_data |>
-      dplyr::mutate(start = as.POSIXct(start, tz = tz_assume),
-                    tzone = tz_assume)
-    # Throwing a warning if
+    # Throwing a warning if time zone is set as null
     warning(paste0("Assuming time zone: ", tz_assume,
                    ". Set time zone explicitly if different."))
   } else {
     if (tz %in% timezones_df$tz_name) {
-      activity_data <- activity_data |>
-        dplyr::mutate(start = as.POSIXct(start, tz = tz),
-                      tzone = tz)
+      tz_assume <- tz
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
         warning(paste("UTC offset for the", tz,
                       "time zone mismatches suggested time zones."))
@@ -159,6 +154,9 @@ read_activity_csv <- function(csv, tz = NULL,
       stop(paste("time zone", tz, "is not a system time zone."))
     }
   }
+  activity_data <- activity_data |>
+    dplyr::mutate(start = as.POSIXct(start, tz = tz_assume),
+                  tzone = tz_assume)
 
   return(activity_data)
 }
