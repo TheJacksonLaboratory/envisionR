@@ -15,6 +15,16 @@ csv_lines_error = gsub("19:17:03","18:17:03",annotation_csv_example)
 tempcsv_2 = tempfile("testannotation_error", fileext = ".csv")
 writeLines(csv_lines_error, tempcsv_2)
 
+# Writing out the CSV file that should work with the test version.
+csv_lines_testversion = c("# Version: TEST",annotation_csv_example)
+tempcsv_3 = tempfile("testannotation_version", fileext = ".csv")
+writeLines(csv_lines_testversion, tempcsv_3)
+
+# Writing out the CSV file that should throw a version doesn't exist error.
+csv_lines_versionerror = c("# Version: DOESNOTEXIST", annotation_csv_example)
+tempcsv_4 = tempfile("testannotation_version_error", fileext = ".csv")
+writeLines(csv_lines_versionerror, tempcsv_4)
+
 # Making the data frame with variable types that should match the wrangled CSV file
 csv_out = read.csv(text = annotation_csv_example) |>
   tibble::as_tibble() |>
@@ -75,6 +85,18 @@ test_that("read_annotation_csv() throws an error when multiple irreconcilable UT
                regexp = "^could not assume a time zone unambiguously.$")
 })
 
+test_that("read_annotation_csv() works with a different version", {
+  expect_equal(read_annotation_csv(tempcsv_3, tz = "US/Pacific"),
+               csv_out)
+})
+
+test_that("read_annotation_csv() throws an error when a version doesn't exist", {
+  expect_error(read_annotation_csv(tempcsv_4, tz = "US/Pacific"),
+               regexp = "^invalid Envision csv version number: vDOESNOTEXIST$")
+})
+
 # Removing temp files
 file.remove(tempcsv_1)
 file.remove(tempcsv_2)
+file.remove(tempcsv_3)
+file.remove(tempcsv_4)

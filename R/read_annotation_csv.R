@@ -61,9 +61,15 @@ read_annotation_csv <- function(csv, tz = NULL) {
 
   # Looking for a version of the annotation CSV
   first10_csv = base::readLines(csv, n = 10)
+
+  # Looking at starting comment characters within the first 10 lines of the CSV
+  # NOTE: this is to ensure that the comment character can be read in the body
+  # of the sheet.
+  comment_char_csv <- grep("^#", first10_csv, value = TRUE)
   annotation_csv_version <- grep("[Vv]ersion",
-                                 first10_csv,
+                                 comment_char_csv,
                                  value = TRUE)
+  header_col_csv <- grep("^start,", first10_csv, value = TRUE)
 
   if (length(annotation_csv_version) == 0) {
     annotation_csv_version = "v0.0.0.9000"
@@ -71,12 +77,15 @@ read_annotation_csv <- function(csv, tz = NULL) {
     annotation_csv_version = paste0("v",
                                     gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
                                          "\\1", annotation_csv_version))
+    if (!annotation_csv_version %in% envisionR::csv_column_defs$version_numbers) {
+      stop("invalid Envision csv version number: ", annotation_csv_version)
+    }
   }
 
   annotation_cols_def = envisionR::csv_column_defs[["annotation"]][[annotation_csv_version]]
 
   # Reading in raw data
-  annotation_data <- readr::read_csv(csv,
+  annotation_data <- readr::read_csv(csv, skip = length(comment_char_csv),
                                      col_types = annotation_cols_def,
                                      show_col_types = FALSE) |>
     janitor::clean_names() |>
