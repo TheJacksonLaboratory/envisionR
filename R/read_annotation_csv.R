@@ -55,9 +55,9 @@ read_annotation_csv <- function(csv, tz = NULL) {
   # Doing variable bindings
   created <- created_date_local <- created_time_local <-
     createdlocal_utc <- utc_offset_h <- min_createdtime <- assume <-
-    min_createdtime_utc <- pin_end_date_local <- pin_end_time_local <-
-    pin_start_time_local <- tz_isdst <- is_dst <- annotation_csv_version <-
-    pin_start_date_local <- tz_name <- NULL
+    min_createdtime_utc <-
+    tz_isdst <- is_dst <- annotation_csv_version <-
+    tz_name <- NULL
 
   # Looking for a version of the annotation CSV
   first10_csv = base::readLines(csv, n = 10)
@@ -132,29 +132,12 @@ read_annotation_csv <- function(csv, tz = NULL) {
     } else {
       stop("could not assume a time zone unambiguously.")
     }
-    annotation_data <- annotation_data |>
-      dplyr::mutate(created = as.POSIXct(created, tzone = tz_assume, optional = TRUE),
-                    pin_start_time = as.POSIXct(paste(as.character(pin_start_date_local),
-                                                   as.character(pin_start_time_local)),
-                                             tz = tz_assume, optional = TRUE),
-                    pin_end_time = as.POSIXct(paste(as.character(pin_end_date_local),
-                                                 as.character(pin_end_time_local)),
-                                             tz = tz_assume, optional = TRUE),
-                    tzone = tz_assume)
     # Throwing a warning if stated time zone is not present in assumed time zones
     warning(paste0("Assuming time zone: ", tz_assume,
                    ". Set time zone explicitly if different."))
   } else {
     if (tz %in% timezones_df$tz_name) {
-      annotation_data <- annotation_data |>
-        dplyr::mutate(created = as.POSIXct(created, tz = tz),
-                      pin_start_time = as.POSIXct(paste(as.character(pin_start_date_local),
-                                                        as.character(pin_start_time_local)),
-                                                          tz = tz, optional = TRUE),
-                      pin_end_time = as.POSIXct(paste(as.character(pin_end_date_local),
-                                                      as.character(pin_end_time_local)),
-                                                        tz = tz, optional = TRUE),
-                      tzone = tz)
+      tz_assume <- tz
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
         warning(paste("UTC offset for the", tz,
                       "time zone mismatches suggested time zones."))
@@ -163,6 +146,21 @@ read_annotation_csv <- function(csv, tz = NULL) {
       stop(paste("time zone", tz, "is not a system time zone."))
     }
   }
+  annotation_data <- annotation_data |>
+    dplyr::mutate(created = as.POSIXct(created, tz = tz_assume),
+                  pin_start_time = paste0(as.character(pin_start_date_local), " ",
+                                          as.character(pin_start_time_local)),
+                  pin_start_time = ifelse(is.na(pin_start_date_local),
+                                          NA, pin_start_time),
+                  pin_start_time = as.POSIXct(pin_start_time,
+                                              tz = tz_assume, optional = TRUE),
+                  pin_end_time = paste0(as.character(pin_end_date_local), " ",
+                                        as.character(pin_end_time_local)),
+                  pin_end_time = ifelse(is.na(pin_end_date_local),
+                                        NA, pin_end_time),
+                  pin_end_time = as.POSIXct(pin_end_time,
+                                            tz = tz_assume, optional = TRUE),
+                  tzone = tz)
 
   return(annotation_data)
 }
