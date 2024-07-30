@@ -5,6 +5,6 @@ csv_lines_raw = "start,start.date.local,start.time.local,study.code,aggregation.
 2023-11-02 02:00:00+00:00,2023-11-01,19:00:00,test1,3600,G1,A1,3,Dark,5.5,0.08,0.1,0.008"
 
 # Getting lines for dummy CSV file
-activity_csv_example = unlist(strsplit(csv_lines_raw, "\n"))
+activity_cage_csv_example = unlist(strsplit(csv_lines_raw, "\n"))
 
-usethis::use_data(activity_csv_example, internal = FALSE, overwrite = TRUE)
+usethis::use_data(activity_cage_csv_example, internal = FALSE, overwrite = TRUE)

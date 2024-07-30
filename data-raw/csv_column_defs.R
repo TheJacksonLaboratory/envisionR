@@ -1,4 +1,5 @@
-csv_column_defs = list(cage = list("v0.0.0.9000" = list(start = readr::col_datetime(format = ""),
+csv_column_defs = list(version_numbers = c("v0.0.0.9000", "vTEST"),
+                       cage = list("v0.0.0.9000" = list(start = readr::col_datetime(format = ""),
                                                            start.date.local = readr::col_date(format = ""),
                                                            start.time.local = readr::col_time(format = ""),
                                                            study.code = readr::col_character(),
@@ -44,5 +45,9 @@ csv_column_defs = list(cage = list("v0.0.0.9000" = list(start = readr::col_datet
                                                                  contents = readr::col_character(),
                                                                  reply_to = readr::col_character(),
                                                                  hashtags = readr::col_character())))
+
+csv_column_defs[["cage"]][["vTEST"]] = csv_column_defs[["cage"]][["v0.0.0.9000"]]
+csv_column_defs[["animal"]][["vTEST"]] = csv_column_defs[["animal"]][["v0.0.0.9000"]]
+csv_column_defs[["annotation"]][["vTEST"]] = csv_column_defs[["annotation"]][["v0.0.0.9000"]]
 
 usethis::use_data(csv_column_defs, internal = FALSE, overwrite = TRUE)

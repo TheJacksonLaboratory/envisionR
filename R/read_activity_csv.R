@@ -10,18 +10,31 @@
 #' @keywords Envision
 #' @export
 #' @examples
-#' # Writing test CSV file for an example
-#' activity_csv <- tempfile("testactivity", fileext = ".csv")
-#' readr::write_lines(activity_csv_example, file = activity_csv)
+#' # Writing test cage-level CSV file for an example
+#' activity_cage_csv <- tempfile("testactivity", fileext = ".csv")
+#' readr::write_lines(activity_cage_csv_example, file = activity_cage_csv)
 #'
-#' # Reading in test activity CSV file
-#' activity <- read_activity_csv(csv = activity_csv, tz = "US/Pacific")
+#' # Reading in test cage-level activity CSV file
+#' activity_cage <- read_activity_csv(csv = activity_cage_csv, tz = "US/Pacific")
 #'
 #' # Glimpsing test activity CSV file
-#' dplyr::glimpse(activity)
+#' dplyr::glimpse(activity_cage_csv)
 #'
 #' # Removing the activity file
-#' file.remove(activity_csv)
+#' file.remove(activity_cage_csv)
+#'
+#' #' Writing test animal-level CSV file for an example
+#' activity_animal_csv <- tempfile("testactivity", fileext = ".csv")
+#' readr::write_lines(activity_animal_csv_example, file = activity_animal_csv)
+#'
+#' # Reading in test animal-level activity CSV file
+#' activity_animal <- read_activity_csv(csv = activity_animal_csv, tz = "US/Pacific")
+#'
+#' # Glimpsing test activity CSV file
+#' dplyr::glimpse(activity_animal)
+#'
+#' # Removing the activity file
+#' file.remove(activity_animal_csv)
 
 read_activity_csv <- function(csv, tz = NULL,
                               metrics = NULL) {
@@ -38,27 +51,41 @@ read_activity_csv <- function(csv, tz = NULL,
     tz_name <- is_dst <- tz_isdst <- NULL
 
   # Looking for a version of the activity CSV
-  first10_csv = base::readLines(csv, n = 10)
+  first10_csv <- base::readLines(csv, n = 10)
+
+  # Looking at starting comment characters within the first 10 lines of the CSV
+  # NOTE: this is to ensure that the comment character can be read in the body
+  # of the sheet.
+  comment_char_csv <- grep("^#", first10_csv, value = TRUE)
   activity_csv_version <- grep("[Vv]ersion",
-                               first10_csv,
+                               comment_char_csv,
                                value = TRUE)
-  header_col_csv = grep("^start,", first10_csv, value = TRUE)
+  header_col_csv <- grep("^start,", first10_csv, value = TRUE)
 
   if (length(activity_csv_version) == 0) {
     activity_csv_version <- "v0.0.0.9000"
   } else {
     activity_csv_version <- paste0("v",
-                                  gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
-                                       "\\1", activity_csv_version))
+                                   gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
+                                        "\\1", activity_csv_version))
+    if (!activity_csv_version %in% envisionR::csv_column_defs$version_numbers) {
+      stop("invalid Envision csv version number: ", activity_csv_version)
+    }
   }
 
   if (is.null(metrics)) {
-    metrics = gsub("^.*movement\\.(.*)\\.cm_s.*$", "\\1", header_col_csv)
-    metrics = ifelse(grepl("animal", metrics), "animal", "cage")
+    metrics <- tolower(gsub("^.*movement\\.(.*)\\.cm_s.*$",
+                            "\\1",
+                            header_col_csv))
+    if (grepl("animal", metrics)) {
+      metrics <- "animal"
+    } else if (grepl("cage", metrics)) {
+      metrics <- "cage"
+    }
   }
 
   # Getting definitions of columns by version
-  metrics = tolower(metrics)
+  metrics <- tolower(metrics)
   if (metrics %in% c("cage", "animal")) {
     activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
   } else {
@@ -66,7 +93,7 @@ read_activity_csv <- function(csv, tz = NULL,
   }
 
   # Reading in raw data
-  activity_data <- readr::read_csv(csv,
+  activity_data <- readr::read_csv(csv, skip = length(comment_char_csv),
                                    col_types = activity_cols_def,
                                    show_col_types = FALSE) |>
     janitor::clean_names() |>
@@ -135,44 +162,3 @@ read_activity_csv <- function(csv, tz = NULL,
 
   return(activity_data)
 }
-
-#' Dummy JAX Envision® activity CSV lines formatted the same as exported activity data.
-#'
-#' A dataset containing four lines of fabricated JAX Envision® activity data.
-#'  These lines follow the format of a JAX Envision® activity CSV.
-#'  When read properly, the lines for cage-level data have raw column titles as follows:
-#'
-#'  \itemize{
-#'    \item \code{start}. the date and time at the start of the aggregation bin (coerced from UTC to local time).
-#'    \item \code{start_date_local}. the start date (in the time zone in which the data were collected).
-#'    \item \code{start_time_local}. the start time (in the time zone in which the data were collected).
-#'    \item \code{study_code}. a unique code for each study.
-#'    \item \code{aggregation_seconds}. the number of seconds aggregated to generate this dataset (3600 is 1 hour).
-#'    \item \code{group_name}. a user-defined group name, often used to label experimental groups of interest.
-#'    \item \code{cage_name}. the name of the cage that the data represent.
-#'    \item \code{animals_cage_quantity}. the number of animals in the cage, sometimes called cage density or occupancy.
-#'    \item \code{light_cycle}. whether the data were collected in the light or dark cycle.
-#'    \item \code{movement_mean_per_cage_cm_s_hour}. cage-level movement in cm/s for a specified period of time (1 hour in this example)
-#'    \item \code{wheel_occupancy_mean_per_cage_animals_hour}. amount of time spent on the wheel at the cage level.
-#'    \item \code{food_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the food hopper at the cage level.
-#'    \item \code{water_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the water bottles at the cage level.
-#'    \item \code{tzone}. time zone of the dataset.
-#'  }
-#'
-#' @docType data
-#' @keywords datasets
-#' @name activity_csv_example
-#' @usage data(activity_csv_example)
-#' @format a character vector with 5 lines, the first line is a header.
-NULL
-
-#' Column definition
-#'
-#' Definitions for the columns of different Envision® csv types and versions.
-#'
-#' @docType data
-#' @keywords datasets
-#' @name csv_column_defs
-#' @usage data(csv_column_defs)
-#' @format a list with both cage-level and animal-level column specifications
-NULL
