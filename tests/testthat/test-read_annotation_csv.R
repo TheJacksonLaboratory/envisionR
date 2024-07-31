@@ -61,6 +61,17 @@ test_that("read_annotation_csv() returns expected tibble with default parameters
                csv_out)
 })
 
+test_that("read_annotation_csv() returns data in correct time zone", {
+  expect_equal(read_annotation_csv(tempcsv_1, tz = "US/Pacific") |>
+                 mutate(created = as.character(created),
+                        pin_start_time = as.character(pin_start_time),
+                        pin_end_time = as.character(pin_end_time)),
+               csv_out |>
+                 mutate(created = as.character(created),
+                        pin_start_time = as.character(pin_start_time),
+                        pin_end_time = as.character(pin_end_time)))
+})
+
 test_that("read_annotation_csv() returns no warnings with default parameters and matching time zones", {
           expect_no_warning(read_annotation_csv(tempcsv_1, tz = "US/Pacific"))
 })

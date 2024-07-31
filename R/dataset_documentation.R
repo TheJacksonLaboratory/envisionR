@@ -105,5 +105,39 @@ NULL
 #' @keywords datasets
 #' @name csv_column_defs
 #' @usage data(csv_column_defs)
-#' @format a list with both cage-level and animal-level column specifications
+#' @format a list with column type definitions for various types of Envision® csv exports.
+NULL
+
+#' Dummy JAX Envision® demographic CSV lines formatted the same as exported demographic data.
+#'
+#' A dataset containing four lines of fabricated JAX Envision® demographics data.
+#'  These lines follow the format of a JAX Envision® demographics CSV.
+#'  When read properly, the lines for demographics data have raw column titles as follows:
+#'
+#'  \itemize{
+#'    \item \code{group}. a user-defined group name, often used to label experimental groups of interest.
+#'    \item \code{cage}. the name of the cage that the data represent.
+#'    \item \code{animal_id}. the unique ID of the animal.
+#'    \item \code{murine_ear_tag}. the code of the ear tag used to identify the animal.
+#'    \item \code{strain}. the strain of animal.
+#'    \item \code{coat_color}. the coat color of the animal.
+#'    \item \code{genotype}. the genotype of the animal.
+#'    \item \code{additional_detail}. miscellaneous additional details about the animal.
+#'    \item \code{sex}. the sex of the animal.
+#'    \item \code{birth_date}. the date (or date-time) of birth for the animal.
+#'    \item \code{death_date}. the date (or date-time) of death for the animal.
+#'    \item \code{ear_notch}. the ear notch ID of the animal (if used).
+#'    \item \code{metal_ear_tag}. the metal ear tag ID of the animal (if used).
+#'    \item \code{other_id}. field for another possible ID code for the animal (if used).
+#'    \item \code{rap_id_tag_code}. the QR code on the RapID tag used for the animal.
+#'    \item \code{rap_id_tag_color}. the color of the RapID tag used for the animal.
+#'    \item \code{rfid}. the RFID of the animal (if used).
+#'    \item \code{tail_tattoo}. the tail tattoo information for the animal (if used).
+#'  }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name demographics_csv_example
+#' @usage data(demographics_csv_example)
+#' @format a character vector with 5 lines, the first line is a header.
 NULL

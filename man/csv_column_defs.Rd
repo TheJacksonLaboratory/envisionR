@@ -5,7 +5,7 @@
 \alias{csv_column_defs}
 \title{Column definition}
 \format{
-a list with both cage-level and animal-level column specifications
+a list with column type definitions for various types of Envision® csv exports.
 }
 \usage{
 data(csv_column_defs)

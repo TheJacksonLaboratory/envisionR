@@ -87,6 +87,7 @@ read_activity_csv <- function(csv, tz = NULL,
   # Getting definitions of columns by version
   metrics <- tolower(metrics)
   if (metrics %in% c("cage", "animal")) {
+    metrics = paste0(metrics, "_activity")
     activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
   } else {
     stop("metrics should be defined as either cage or animal level")

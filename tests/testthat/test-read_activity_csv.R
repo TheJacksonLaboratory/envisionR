@@ -84,6 +84,13 @@ test_that("read_activity_csv() returns no warnings with default parameters and m
           expect_no_warning(read_activity_csv(tempcsv_1, tz = "US/Pacific"))
 })
 
+test_that("read_activity_csv() outputs start in the correct time zone for cage-level metrics", {
+  expect_equal(read_activity_csv(tempcsv_1, tz = "US/Pacific") |>
+                 mutate(start = as.character(start)),
+               csv_cage_out |>
+                 mutate(start = as.character(start)))
+})
+
 test_that("read_activity_csv() throws a warning when time zone is omitted", {
   expect_warning(read_activity_csv(tempcsv_1),
                  regexp = "^Assuming time zone: \\w+/\\w+\\. Set time zone explicitly if different.$")
@@ -129,6 +136,14 @@ test_that("read_activity_csv() returns expected tibble with animal-level metrics
   expect_equal(read_activity_csv(tempcsv_6, tz = "US/Pacific"),
                csv_animal_out)
 })
+
+test_that("read_activity_csv() outputs start in the correct time zone for animal-level metrics", {
+  expect_equal(read_activity_csv(tempcsv_6, tz = "US/Pacific") |>
+                 mutate(start = as.character(start)),
+               csv_animal_out |>
+                 mutate(start = as.character(start)))
+})
+
 
 # Removing temp files
 file.remove(tempcsv_1)
