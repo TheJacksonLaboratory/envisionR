@@ -7,10 +7,17 @@
 #' @param date_only Whether to return date or date-time for \code{birth_date}
 #'  and \code{death_date} fields. Default: \code{TRUE}, which converts these
 #'  fields to a date.
+#' @param amend_groupcage Whether to return column titles for \code{group}
+#'  and \code{cage} with the string \code{_id} appended to match other dataset
+#'  types. Defaults to \code{TRUE}.
 #' @returns A \code{tibble} with experimental data optimally formatted for
 #'  downstream analysis.
 #' @keywords Envision
 #' @export
+#' @note setting \code{amend_groupcage} to \code{TRUE} amends the column names
+#' to match the output of \code{read_activity_csv()} and
+#' \code{read_annotation_csv()}. This is recommended as it allows the
+#' \code{group_id} and \code{cage_id} columns to be used for joins by \code{dplyr}.
 #' @examples
 #' # Writing test CSV file
 #' demographics_csv <- tempfile("testdemographics", fileext = ".csv")
@@ -46,7 +53,9 @@
 #' @rdname read_demographics_csv
 #' @order 1
 #' @export
-read_demographics_csv <- function(csv, date_only = TRUE) {
+read_demographics_csv <- function(csv,
+                                  date_only = TRUE,
+                                  amend_groupcage = TRUE) {
 
   # Ensuring required packages are loaded
   stopifnot(requireNamespace("readr", quietly = TRUE))
@@ -55,7 +64,7 @@ read_demographics_csv <- function(csv, date_only = TRUE) {
   stopifnot(requireNamespace("tibble", quietly = TRUE))
 
   # Doing variable bindings
-  birth_date <- death_date <- NULL
+  birth_date <- death_date <- group <- cage <- NULL
 
   # Looking for a version of the activity CSV
   first10_csv <- base::readLines(csv, n = 10)
@@ -96,6 +105,13 @@ read_demographics_csv <- function(csv, date_only = TRUE) {
                       death_date = as.Date(death_date))
   }
 
+  if (amend_groupcage) {
+    demo_data <- demo_data |>
+      dplyr::rename(group_id = group,
+                    cage_id = cage)
+  }
+
+
   return(demo_data)
 }
 
@@ -103,7 +119,9 @@ read_demographics_csv <- function(csv, date_only = TRUE) {
 #' @rdname read_demographics_csv
 #' @order 2
 #' @export
-read_animalscages_csv <- function(csv, date_only = TRUE) {
+read_animalscages_csv <- function(csv,
+                                  date_only = TRUE,
+                                  amend_groupcage = TRUE) {
   return(read_demographics_csv(csv, date_only))
 }
 
@@ -111,6 +129,8 @@ read_animalscages_csv <- function(csv, date_only = TRUE) {
 #' @rdname read_demographics_csv
 #' @order 3
 #' @export
-read_animalsandcages_csv <- function(csv, date_only = TRUE) {
+read_animalsandcages_csv <- function(csv,
+                                     date_only = TRUE,
+                                     amend_groupcage = TRUE) {
   return(read_demographics_csv(csv, date_only))
 }

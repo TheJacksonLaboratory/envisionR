@@ -6,11 +6,11 @@
 \alias{read_animalsandcages_csv}
 \title{A Function to Read JAX Envision® animal and cage demographics CSVs}
 \usage{
-read_demographics_csv(csv, date_only = TRUE)
+read_demographics_csv(csv, date_only = TRUE, amend_groupcage = TRUE)
 
-read_animalscages_csv(csv, date_only = TRUE)
+read_animalscages_csv(csv, date_only = TRUE, amend_groupcage = TRUE)
 
-read_animalsandcages_csv(csv, date_only = TRUE)
+read_animalsandcages_csv(csv, date_only = TRUE, amend_groupcage = TRUE)
 }
 \arguments{
 \item{csv}{File path for the Envision® CSV.}
@@ -18,6 +18,10 @@ read_animalsandcages_csv(csv, date_only = TRUE)
 \item{date_only}{Whether to return date or date-time for \code{birth_date}
 and \code{death_date} fields. Default: \code{TRUE}, which converts these
 fields to a date.}
+
+\item{amend_groupcage}{Whether to return column titles for \code{group}
+and \code{cage} with the string \code{_id} appended to match other dataset
+types. Defaults to \code{TRUE}.}
 }
 \value{
 A \code{tibble} with experimental data optimally formatted for
@@ -26,6 +30,12 @@ downstream analysis.
 \description{
 This function allows you to read animal and cage demographics CSVs generated
 by the JAX Envision® software.
+}
+\note{
+setting \code{amend_groupcage} to \code{TRUE} amends the column names
+to match the output of \code{read_activity_csv()} and
+\code{read_annotation_csv()}. This is recommended as it allows the
+\code{group_id} and \code{cage_id} columns to be used for joins by \code{dplyr}.
 }
 \examples{
 # Writing test CSV file

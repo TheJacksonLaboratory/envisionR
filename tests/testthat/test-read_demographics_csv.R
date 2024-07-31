@@ -33,37 +33,56 @@ test_that("read_demographics_csv() returns expected tibble with default paramete
   expect_equal(read_demographics_csv(tempcsv_1),
                csv_demo_out |>
                  mutate(birth_date = as.Date(birth_date),
-                        death_date = as.Date(death_date)))
+                        death_date = as.Date(death_date)) |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
 })
 
 test_that("read_animalscages_csv() wrapper works", {
   expect_equal(read_animalscages_csv(tempcsv_1),
                csv_demo_out |>
                  mutate(birth_date = as.Date(birth_date),
-                        death_date = as.Date(death_date)))
+                        death_date = as.Date(death_date)) |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
 })
 
 test_that("read_animalsandcages_csv() wrapper works", {
   expect_equal(read_animalsandcages_csv(tempcsv_1),
                csv_demo_out |>
                  mutate(birth_date = as.Date(birth_date),
+                        death_date = as.Date(death_date)) |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
+})
+
+
+test_that("read_demographics_csv() returns properly formatted data when amend_groupcage is set to FALSE", {
+  expect_equal(read_demographics_csv(tempcsv_1, amend_groupcage = FALSE),
+               csv_demo_out |>
+                 mutate(birth_date = as.Date(birth_date),
                         death_date = as.Date(death_date)))
 })
 
-
 test_that("read_demographics_csv() returns properly formatted data when date_only is set to FALSE", {
   expect_equal(read_demographics_csv(tempcsv_1, date_only = FALSE),
-               csv_demo_out)
+               csv_demo_out |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
 })
 
 test_that("read_demographics_csv() returns properly formatted data when date_only is set to FALSE", {
   expect_equal(read_demographics_csv(tempcsv_1, date_only = FALSE),
-               csv_demo_out)
+               csv_demo_out |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
 })
 
 test_that("read_demographics_csv() can use a different version", {
   expect_equal(read_demographics_csv(tempcsv_2, date_only = FALSE),
-               csv_demo_out)
+               csv_demo_out |>
+                 dplyr::rename(group_id = group,
+                               cage_id = cage))
 })
 
 test_that("read_demographics_csv() throws an error for an invalid version", {
