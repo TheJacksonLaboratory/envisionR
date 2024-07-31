@@ -30,10 +30,12 @@ A \code{tibble} with lights-off and lights-on times for all dates, useful for co
 This function returns a \code{tibble} of lights-off and lights-on times.
 }
 \examples{
-lightdark_times(lights_on_time = "06:00",
-                lights_off_time = "18:00",
-                start_date = "2024-06-02",
-                end_date = "2024-06-03",
-                tzone = "US/Pacific")
+lightdark_times(
+  lights_on_time = "06:00",
+  lights_off_time = "18:00",
+  start_date = "2024-06-02",
+  end_date = "2024-06-03",
+  tzone = "US/Pacific"
+)
 }
 \keyword{Envision}

@@ -35,10 +35,8 @@
 #'
 #' # Removing the activity file
 #' file.remove(activity_animal_csv)
-
 read_activity_csv <- function(csv, tz = NULL,
                               metrics = NULL) {
-
   # Ensuring required packages are loaded
   stopifnot(requireNamespace("readr", quietly = TRUE))
   stopifnot(requireNamespace("janitor", quietly = TRUE))
@@ -58,25 +56,32 @@ read_activity_csv <- function(csv, tz = NULL,
   # of the sheet.
   comment_char_csv <- grep("^#", first10_csv, value = TRUE)
   activity_csv_version <- grep("[Vv]ersion",
-                               comment_char_csv,
-                               value = TRUE)
+    comment_char_csv,
+    value = TRUE
+  )
   header_col_csv <- grep("^start,", first10_csv, value = TRUE)
 
   if (length(activity_csv_version) == 0) {
     activity_csv_version <- "v0.0.0.9000"
   } else {
-    activity_csv_version <- paste0("v",
-                                   gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
-                                        "\\1", activity_csv_version))
+    activity_csv_version <- paste0(
+      "v",
+      gsub(
+        "^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
+        "\\1", activity_csv_version
+      )
+    )
     if (!activity_csv_version %in% envisionR::csv_column_defs$version_numbers) {
       stop("invalid Envision csv version number: ", activity_csv_version)
     }
   }
 
   if (is.null(metrics)) {
-    metrics <- tolower(gsub("^.*movement\\.(.*)\\.cm_s.*$",
-                            "\\1",
-                            header_col_csv))
+    metrics <- tolower(gsub(
+      "^.*movement\\.(.*)\\.cm_s.*$",
+      "\\1",
+      header_col_csv
+    ))
     if (grepl("animal", metrics)) {
       metrics <- "animal"
     } else if (grepl("cage", metrics)) {
@@ -87,24 +92,31 @@ read_activity_csv <- function(csv, tz = NULL,
   # Getting definitions of columns by version
   metrics <- tolower(metrics)
   if (metrics %in% c("cage", "animal")) {
-    metrics = paste0(metrics, "_activity")
+    metrics <- paste0(metrics, "_activity")
     activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
   } else {
     stop("metrics should be defined as either cage or animal level")
   }
 
   # Reading in raw data
-  activity_data <- readr::read_csv(csv, skip = length(comment_char_csv),
-                                   col_types = activity_cols_def,
-                                   show_col_types = FALSE) |>
+  activity_data <- readr::read_csv(csv,
+    skip = length(comment_char_csv),
+    col_types = activity_cols_def,
+    show_col_types = FALSE
+  ) |>
     janitor::clean_names() |>
     tibble::as_tibble()
 
   # Starting by listing compatible time zones
   compatible_tzones <- activity_data |>
-    dplyr::mutate(utc_offset_h = get_utc_offset(as.POSIXct(paste(start_date_local,
-                                                                 start_time_local)),
-                                                start, as_numeric = TRUE)) |>
+    dplyr::mutate(utc_offset_h = get_utc_offset(
+      as.POSIXct(paste(
+        start_date_local,
+        start_time_local
+      )),
+      start,
+      as_numeric = TRUE
+    )) |>
     dplyr::group_by(utc_offset_h) |>
     dplyr::mutate(min_starttime = min(start)) |>
     dplyr::select(utc_offset_h, min_starttime) |>
@@ -123,8 +135,10 @@ read_activity_csv <- function(csv, tz = NULL,
       as.data.frame()
 
     for (i in seq_len(nrow(probable_tzones))) {
-      probable_tzones[i,"tz_isdst"] <- as.POSIXlt(probable_tzones[i,"min_starttime_utc"],
-                                                  probable_tzones[i,"tz_name"])$isdst == 1
+      probable_tzones[i, "tz_isdst"] <- as.POSIXlt(
+        probable_tzones[i, "min_starttime_utc"],
+        probable_tzones[i, "tz_name"]
+      )$isdst == 1
     }
 
     probable_tzones <- probable_tzones |>
@@ -142,22 +156,28 @@ read_activity_csv <- function(csv, tz = NULL,
       stop("could not assume a time zone unambiguously.")
     }
     # Throwing a warning if time zone is set as null
-    warning(paste0("Assuming time zone: ", tz_assume,
-                   ". Set time zone explicitly if different."))
+    warning(paste0(
+      "Assuming time zone: ", tz_assume,
+      ". Set time zone explicitly if different."
+    ))
   } else {
     if (tz %in% timezones_df$tz_name) {
       tz_assume <- tz
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
-        warning(paste("UTC offset for the", tz,
-                      "time zone mismatches suggested time zones."))
+        warning(paste(
+          "UTC offset for the", tz,
+          "time zone mismatches suggested time zones."
+        ))
       }
     } else {
       stop(paste("time zone", tz, "is not a system time zone."))
     }
   }
   activity_data <- activity_data |>
-    dplyr::mutate(start = as.POSIXct(start, tz = tz_assume),
-                  tzone = tz_assume)
+    dplyr::mutate(
+      start = as.POSIXct(start, tz = tz_assume),
+      tzone = tz_assume
+    )
 
   return(activity_data)
 }

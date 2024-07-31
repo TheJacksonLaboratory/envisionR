@@ -10,9 +10,7 @@
 #' @export
 #' @examples
 #' weeks_postnatal_seq(dob = as.Date("2024-01-20"), n_weeks = 12)
-
 weeks_postnatal_seq <- function(dob, n_weeks, quiet = FALSE) {
-
   # Throwing an error if DOB is not a POSIXct or cannot be coerced to one
   if (!inherits(dob, "Date") & !is.character(dob)) {
     stop("dob is neither a Date nor a character vector")
@@ -32,9 +30,11 @@ weeks_postnatal_seq <- function(dob, n_weeks, quiet = FALSE) {
   stopifnot(is.numeric(n_weeks))
 
   # Getting a sequence of postnatal days at which an animal is a certain age
-  pnds <- seq(from = dob,
-              to = dob + 7 * floor(n_weeks),
-              by = 7)
+  pnds <- seq(
+    from = dob,
+    to = dob + 7 * floor(n_weeks),
+    by = 7
+  )
   names(pnds) <- paste0("Postnatal Week ", seq_len(length(pnds)) - 1)
 
   # Returning the vector

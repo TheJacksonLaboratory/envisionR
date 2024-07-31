@@ -16,14 +16,12 @@
 #' @export
 #' @examples
 #' make_envision_url(1001, 1001, 1001, as.POSIXct("2024-06-12 07:45:00", tz = "US/Central"))
-
-make_envision_url = function(org, study, cage, vidstart,
-                             windowstart_h = 12, windowend_h = 12,
-                             metricstab = "cage", videostream = "overlay",
-                             url_base = "https://app.murine.net/org/") {
-
+make_envision_url <- function(org, study, cage, vidstart,
+                              windowstart_h = 12, windowend_h = 12,
+                              metricstab = "cage", videostream = "overlay",
+                              url_base = "https://app.murine.net/org/") {
   # Checking each argument
-  stopifnot(metricstab %in% c("cage","animal","alpha"))
+  stopifnot(metricstab %in% c("cage", "animal", "alpha"))
   stopifnot(videostream %in% c("overlay"))
   stopifnot(inherits(vidstart, "POSIXct"))
   stopifnot(is.numeric(org))
@@ -32,14 +30,16 @@ make_envision_url = function(org, study, cage, vidstart,
   stopifnot(is.numeric(windowstart_h) & sign(windowstart_h) == 1)
   stopifnot(is.numeric(windowend_h) & sign(windowend_h) == 1)
 
-  unix_time = as.numeric(vidstart)
-  timestamp = format(1000 * unix_time, scientific = FALSE)
-  ws = format(unix_time * 1000 - windowstart_h * 3.6e6, scientific = FALSE)
-  we = format(unix_time * 1000 + windowend_h * 3.6e6, scientific = FALSE)
-  url_base = gsub("/+$", "", url_base) # Pulling any unintended slashes from URL base
-  url_end = paste0(cage, "?metricsTab=", metricstab, "&rangeEnd=",
-                   we, "&rangeStart=", ws, "&videoStart=", timestamp,
-                   "&videoStream=", videostream)
+  unix_time <- as.numeric(vidstart)
+  timestamp <- format(1000 * unix_time, scientific = FALSE)
+  ws <- format(unix_time * 1000 - windowstart_h * 3.6e6, scientific = FALSE)
+  we <- format(unix_time * 1000 + windowend_h * 3.6e6, scientific = FALSE)
+  url_base <- gsub("/+$", "", url_base) # Pulling any unintended slashes from URL base
+  url_end <- paste0(
+    cage, "?metricsTab=", metricstab, "&rangeEnd=",
+    we, "&rangeStart=", ws, "&videoStart=", timestamp,
+    "&videoStream=", videostream
+  )
 
   return(paste(url_base, org, "study", study, "cage", url_end, sep = "/"))
 }

@@ -6,9 +6,7 @@
 #' @export
 #' @examples
 #' list_tzones()
-
-list_tzones = function() {
-
+list_tzones <- function() {
   # Getting dplyr library
   stopifnot(requireNamespace("dplyr", quietly = TRUE))
 
@@ -16,7 +14,7 @@ list_tzones = function() {
   assume <- override <- zone <- NULL
 
   # Grabbing the data frame
-  tzones = timezones_df |>
+  tzones <- timezones_df |>
     dplyr::select(-assume, -override, -zone)
 
   return(tzones)

@@ -43,9 +43,7 @@
 #'
 #' # Removing the annotation temp file
 #' file.remove(annotation_csv)
-
 read_annotation_csv <- function(csv, tz = NULL) {
-
   # Ensuring required packages are loaded
   stopifnot(requireNamespace("readr", quietly = TRUE))
   stopifnot(requireNamespace("janitor", quietly = TRUE))
@@ -61,42 +59,54 @@ read_annotation_csv <- function(csv, tz = NULL) {
     tz_name <- NULL
 
   # Looking for a version of the annotation CSV
-  first10_csv = base::readLines(csv, n = 10)
+  first10_csv <- base::readLines(csv, n = 10)
 
   # Looking at starting comment characters within the first 10 lines of the CSV
   # NOTE: this is to ensure that the comment character can be read in the body
   # of the sheet.
   comment_char_csv <- grep("^#", first10_csv, value = TRUE)
   annotation_csv_version <- grep("[Vv]ersion",
-                                 comment_char_csv,
-                                 value = TRUE)
+    comment_char_csv,
+    value = TRUE
+  )
   header_col_csv <- grep("^start,", first10_csv, value = TRUE)
 
   if (length(annotation_csv_version) == 0) {
-    annotation_csv_version = "v0.0.0.9000"
+    annotation_csv_version <- "v0.0.0.9000"
   } else {
-    annotation_csv_version = paste0("v",
-                                    gsub("^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
-                                         "\\1", annotation_csv_version))
+    annotation_csv_version <- paste0(
+      "v",
+      gsub(
+        "^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
+        "\\1", annotation_csv_version
+      )
+    )
     if (!annotation_csv_version %in% envisionR::csv_column_defs$version_numbers) {
       stop("invalid Envision csv version number: ", annotation_csv_version)
     }
   }
 
-  annotation_cols_def = envisionR::csv_column_defs[["annotation"]][[annotation_csv_version]]
+  annotation_cols_def <- envisionR::csv_column_defs[["annotation"]][[annotation_csv_version]]
 
   # Reading in raw data
-  annotation_data <- readr::read_csv(csv, skip = length(comment_char_csv),
-                                     col_types = annotation_cols_def,
-                                     show_col_types = FALSE) |>
+  annotation_data <- readr::read_csv(csv,
+    skip = length(comment_char_csv),
+    col_types = annotation_cols_def,
+    show_col_types = FALSE
+  ) |>
     janitor::clean_names() |>
     tibble::as_tibble()
 
   # Starting by listing compatible time zones
   compatible_tzones <- annotation_data |>
-    dplyr::mutate(utc_offset_h = get_utc_offset(as.POSIXct(paste(created_date_local,
-                                                                 created_time_local)),
-                                                created, as_numeric = TRUE)) |>
+    dplyr::mutate(utc_offset_h = get_utc_offset(
+      as.POSIXct(paste(
+        created_date_local,
+        created_time_local
+      )),
+      created,
+      as_numeric = TRUE
+    )) |>
     dplyr::group_by(utc_offset_h) |>
     dplyr::mutate(min_createdtime = min(created)) |>
     dplyr::select(utc_offset_h, min_createdtime) |>
@@ -115,8 +125,10 @@ read_annotation_csv <- function(csv, tz = NULL) {
       as.data.frame()
 
     for (i in seq_len(nrow(probable_tzones))) {
-      probable_tzones[i,"tz_isdst"] <- as.POSIXlt(probable_tzones[i,"min_createdtime_utc"],
-                                                  probable_tzones[i,"tz_name"])$isdst == 1
+      probable_tzones[i, "tz_isdst"] <- as.POSIXlt(
+        probable_tzones[i, "min_createdtime_utc"],
+        probable_tzones[i, "tz_name"]
+      )$isdst == 1
     }
 
     probable_tzones <- probable_tzones |>
@@ -134,34 +146,48 @@ read_annotation_csv <- function(csv, tz = NULL) {
       stop("could not assume a time zone unambiguously.")
     }
     # Throwing a warning if stated time zone is not present in assumed time zones
-    warning(paste0("Assuming time zone: ", tz_assume,
-                   ". Set time zone explicitly if different."))
+    warning(paste0(
+      "Assuming time zone: ", tz_assume,
+      ". Set time zone explicitly if different."
+    ))
   } else {
     if (tz %in% timezones_df$tz_name) {
       tz_assume <- tz
       if (!(tz %in% (compatible_tzones |> dplyr::pull(tz_name)))) {
-        warning(paste("UTC offset for the", tz,
-                      "time zone mismatches suggested time zones."))
+        warning(paste(
+          "UTC offset for the", tz,
+          "time zone mismatches suggested time zones."
+        ))
       }
     } else {
       stop(paste("time zone", tz, "is not a system time zone."))
     }
   }
   annotation_data <- annotation_data |>
-    dplyr::mutate(created = as.POSIXct(created, tz = tz_assume),
-                  pin_start_time = paste0(as.character(pin_start_date_local), " ",
-                                          as.character(pin_start_time_local)),
-                  pin_start_time = ifelse(is.na(pin_start_date_local),
-                                          NA, pin_start_time),
-                  pin_start_time = as.POSIXct(pin_start_time,
-                                              tz = tz_assume, optional = TRUE),
-                  pin_end_time = paste0(as.character(pin_end_date_local), " ",
-                                        as.character(pin_end_time_local)),
-                  pin_end_time = ifelse(is.na(pin_end_date_local),
-                                        NA, pin_end_time),
-                  pin_end_time = as.POSIXct(pin_end_time,
-                                            tz = tz_assume, optional = TRUE),
-                  tzone = tz)
+    dplyr::mutate(
+      created = as.POSIXct(created, tz = tz_assume),
+      pin_start_time = paste0(
+        as.character(pin_start_date_local), " ",
+        as.character(pin_start_time_local)
+      ),
+      pin_start_time = ifelse(is.na(pin_start_date_local),
+        NA, pin_start_time
+      ),
+      pin_start_time = as.POSIXct(pin_start_time,
+        tz = tz_assume, optional = TRUE
+      ),
+      pin_end_time = paste0(
+        as.character(pin_end_date_local), " ",
+        as.character(pin_end_time_local)
+      ),
+      pin_end_time = ifelse(is.na(pin_end_date_local),
+        NA, pin_end_time
+      ),
+      pin_end_time = as.POSIXct(pin_end_time,
+        tz = tz_assume, optional = TRUE
+      ),
+      tzone = tz
+    )
 
   return(annotation_data)
 }

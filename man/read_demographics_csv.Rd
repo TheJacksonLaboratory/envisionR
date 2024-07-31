@@ -61,9 +61,11 @@ animalsandcages <- read_animalsandcages_csv(csv = demographics_csv)
 dplyr::glimpse(animalsandcages)
 
 # Removing samples from workspace
-rm(list = c("demographics",
-            "animalscages",
-            "animalsandcages"))
+rm(list = c(
+  "demographics",
+  "animalscages",
+  "animalsandcages"
+))
 
 # Removing the demographics temp file
 file.remove(demographics_csv)

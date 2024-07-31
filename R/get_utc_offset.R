@@ -13,11 +13,11 @@
 #' get_utc_offset(ts = as.POSIXct("2024-06-01 12:00:00", tzone = "US/Pacific"))
 #'
 #' # Use with a second time stamp and no explicit time zone.
-#' get_utc_offset(ts = as.POSIXct("2024-06-01 12:00:00"),
-#'                ts_utc = as.POSIXct("2024-06-01 05:00:00"))
-
-get_utc_offset = function(ts, ts_utc = NULL, as_numeric = FALSE) {
-
+#' get_utc_offset(
+#'   ts = as.POSIXct("2024-06-01 12:00:00"),
+#'   ts_utc = as.POSIXct("2024-06-01 05:00:00")
+#' )
+get_utc_offset <- function(ts, ts_utc = NULL, as_numeric = FALSE) {
   # Throwing an error if timestamp is not a POSIXct
   stopifnot(inherits(ts, "POSIXct"))
 
@@ -41,8 +41,10 @@ get_utc_offset = function(ts, ts_utc = NULL, as_numeric = FALSE) {
   if (as_numeric) {
     offset <- offset_hr + offset_mn / 60
   } else {
-    offset <- paste0(formatC(offset_hr, width = 3, flag = "0+"), ":",
-                     formatC(abs(offset_mn), width = 2, flag = "0"))
+    offset <- paste0(
+      formatC(offset_hr, width = 3, flag = "0+"), ":",
+      formatC(abs(offset_mn), width = 2, flag = "0")
+    )
   }
   # Returning a properly formatted UTC offset as a character vector
   return(offset)

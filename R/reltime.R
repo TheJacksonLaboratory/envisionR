@@ -10,12 +10,13 @@
 #' @returns a \code{vector} of relative time in the given units.
 #' @keywords Envision
 
-reltime = function(rawtimes,
-                   reftimes,
-                   units = c("seconds","minutes","hours",
-                             "days","weeks","months","years"),
-                   offset = 0) {
-
+reltime <- function(rawtimes,
+                    reftimes,
+                    units = c(
+                      "seconds", "minutes", "hours",
+                      "days", "weeks", "months", "years"
+                    ),
+                    offset = 0) {
   # Ensuring that times are all POSIXct
   stopifnot(inherits(rawtimes, "POSIXct"))
   stopifnot(inherits(reftimes, "POSIXct"))
@@ -24,14 +25,16 @@ reltime = function(rawtimes,
   stopifnot(is.numeric(offset))
 
   # Checking that the argument for units is in the list
-  stopifnot(units %in% c("seconds","minutes","hours",
-                         "days","weeks","months","years"))
+  stopifnot(units %in% c(
+    "seconds", "minutes", "hours",
+    "days", "weeks", "months", "years"
+  ))
 
   # Ensuring that reftimes matches rawtimes
   if (length(reftimes) == 1 & length(rawtimes) != 1) {
-    reftimes = rep(reftimes, times = length(rawtimes))
+    reftimes <- rep(reftimes, times = length(rawtimes))
   } else if (length(reftimes) == length(rawtimes) & length(reftimes) != 1) {
-    reftimes = reftimes
+    reftimes <- reftimes
   } else {
     stop("rawtimes and reftimes are different lengths")
   }
@@ -63,7 +66,7 @@ reltime = function(rawtimes,
   }
 
   # Adding the reference time value
-  reltimes = newtimes_raw + offset
+  reltimes <- newtimes_raw + offset
 
   # Returning the result
   return(reltimes)
