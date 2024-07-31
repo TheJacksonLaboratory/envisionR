@@ -55,8 +55,9 @@ read_annotation_csv <- function(csv, tz = NULL) {
   # Doing variable bindings
   created <- created_date_local <- created_time_local <-
     createdlocal_utc <- utc_offset_h <- min_createdtime <- assume <-
-    min_createdtime_utc <-
-    tz_isdst <- is_dst <- annotation_csv_version <-
+    min_createdtime_utc <- pin_start_date_local <- pin_start_time_local <-
+    pin_start_time <- pin_end_date_local <- pin_end_time_local <-
+    pin_end_time <- tz_isdst <- is_dst <- annotation_csv_version <-
     tz_name <- NULL
 
   # Looking for a version of the annotation CSV
