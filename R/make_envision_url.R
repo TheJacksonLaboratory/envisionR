@@ -9,7 +9,6 @@
 #' @param windowstart_h Hours before the start of the video for the window.
 #' @param windowend_h Hours after the start of the video for the window.
 #' @param metricstab Which metrics tab to return (either \code{"cage"}, \code{"animal"}, or \code{"alpha"}).
-#' @param url_base What URL base is used for the Envision® URL: NOTE: the default of \code{"https://app.murine.net/org/"} is from the original version of the app.
 #' @param videostream Which video stream to return (note: for now, \code{"overlay"} is the default).
 #' @returns A \code{character} vector containing the JAX Envision® URL.
 #' @keywords Envision
@@ -18,8 +17,7 @@
 #' make_envision_url(1001, 1001, 1001, as.POSIXct("2024-06-12 07:45:00", tz = "US/Central"))
 make_envision_url <- function(org, study, cage, vidstart,
                               windowstart_h = 12, windowend_h = 12,
-                              metricstab = "cage", videostream = "overlay",
-                              url_base = "https://app.murine.net/org/") {
+                              metricstab = "cage", videostream = "overlay") {
   # Checking each argument
   stopifnot(metricstab %in% c("cage", "animal", "alpha"))
   stopifnot(videostream %in% c("overlay"))
@@ -30,6 +28,7 @@ make_envision_url <- function(org, study, cage, vidstart,
   stopifnot(is.numeric(windowstart_h) & sign(windowstart_h) == 1)
   stopifnot(is.numeric(windowend_h) & sign(windowend_h) == 1)
 
+  url_base <- "https://envision.jax.org/org/"
   unix_time <- as.numeric(vidstart)
   timestamp <- format(1000 * unix_time, scientific = FALSE)
   ws <- format(unix_time * 1000 - windowstart_h * 3.6e6, scientific = FALSE)

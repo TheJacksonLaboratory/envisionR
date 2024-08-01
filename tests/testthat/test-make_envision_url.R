@@ -1,6 +1,6 @@
 # Unit tests for the make_envision_url() function.
 
-url_return <- "https://app.murine.net/org/1001/study/1001/cage/1001?metricsTab=cage&rangeEnd=1686584700000&rangeStart=1686563100000&videoStart=1686573900000&videoStream=overlay"
+url_return <- "https://envision.jax.org/org/1001/study/1001/cage/1001?metricsTab=cage&rangeEnd=1686584700000&rangeStart=1686563100000&videoStart=1686573900000&videoStream=overlay"
 
 test_that("test that make_envision_url() returns a well-formed Envision URL", {
   expect_equal(
@@ -12,8 +12,7 @@ test_that("test that make_envision_url() returns a well-formed Envision URL", {
       windowstart_h = 3,
       windowend_h = 3,
       metricstab = "cage",
-      videostream = "overlay",
-      url_base = "https://app.murine.net/org"
+      videostream = "overlay"
     ),
     url_return
   )
@@ -29,8 +28,7 @@ test_that("test that make_envision_url() can pull out slashes at the end of the 
       windowstart_h = 3,
       windowend_h = 3,
       metricstab = "cage",
-      videostream = "overlay",
-      url_base = "https://app.murine.net/org///"
+      videostream = "overlay"
     ),
     url_return
   )

@@ -12,8 +12,7 @@ make_envision_url(
   windowstart_h = 12,
   windowend_h = 12,
   metricstab = "cage",
-  videostream = "overlay",
-  url_base = "https://app.murine.net/org/"
+  videostream = "overlay"
 )
 }
 \arguments{
@@ -32,8 +31,6 @@ make_envision_url(
 \item{metricstab}{Which metrics tab to return (either \code{"cage"}, \code{"animal"}, or \code{"alpha"}).}
 
 \item{videostream}{Which video stream to return (note: for now, \code{"overlay"} is the default).}
-
-\item{url_base}{What URL base is used for the Envision® URL: NOTE: the default of \code{"https://app.murine.net/org/"} is from the original version of the app.}
 }
 \value{
 A \code{character} vector containing the JAX Envision® URL.
