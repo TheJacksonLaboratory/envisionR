@@ -4,12 +4,12 @@
 \alias{read_activity_csv}
 \title{A Function to Read JAX Envision® activity CSVs}
 \usage{
-read_activity_csv(csv, tz = NULL, metrics = NULL)
+read_activity_csv(csv, tzone = NULL, metrics = NULL)
 }
 \arguments{
 \item{csv}{File path for the Envision® CSV.}
 
-\item{tz}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
+\item{tzone}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
 
 \item{metrics}{Should the function expect cage (\code{"cage"}) or animal
 (\code{"animal"}) level activity metrics? Default: \code{NULL} tries to

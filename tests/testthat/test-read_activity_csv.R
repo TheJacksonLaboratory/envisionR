@@ -81,18 +81,18 @@ csv_animal_out <- read.csv(text = activity_animal_csv_example) |>
 # Doing the tests
 test_that("read_activity_csv() returns expected tibble with default parameters", {
   expect_equal(
-    read_activity_csv(tempcsv_1, tz = "US/Pacific"),
+    read_activity_csv(tempcsv_1, tzone = "US/Pacific"),
     csv_cage_out
   )
 })
 
 test_that("read_activity_csv() returns no warnings with default parameters and matching time zones", {
-  expect_no_warning(read_activity_csv(tempcsv_1, tz = "US/Pacific"))
+  expect_no_warning(read_activity_csv(tempcsv_1, tzone = "US/Pacific"))
 })
 
 test_that("read_activity_csv() outputs start in the correct time zone for cage-level metrics", {
   expect_equal(
-    read_activity_csv(tempcsv_1, tz = "US/Pacific") |>
+    read_activity_csv(tempcsv_1, tzone = "US/Pacific") |>
       mutate(start = as.character(start)),
     csv_cage_out |>
       mutate(start = as.character(start))
@@ -106,13 +106,13 @@ test_that("read_activity_csv() throws a warning when time zone is omitted", {
 })
 
 test_that("read_activity_csv() throws a warning when started time zone mismatches UTC offset", {
-  expect_warning(read_activity_csv(tempcsv_1, tz = "Canada/Newfoundland"),
+  expect_warning(read_activity_csv(tempcsv_1, tzone = "Canada/Newfoundland"),
     regexp = "^UTC offset for the \\w+/\\w+ time zone mismatches suggested time zones.$"
   )
 })
 
 test_that("read_activity_csv() throws an error when started time zone does not exist", {
-  expect_error(read_activity_csv(tempcsv_1, tz = "Canada/New_Foundland"),
+  expect_error(read_activity_csv(tempcsv_1, tzone = "Canada/New_Foundland"),
     regexp = "^time zone \\w+/\\w+ is not a system time zone.$"
   )
 })
@@ -151,14 +151,14 @@ test_that("read_activity_csv() throws an error when neither animal nor cage is i
 # Doing the tests
 test_that("read_activity_csv() returns expected tibble with animal-level metrics", {
   expect_equal(
-    read_activity_csv(tempcsv_6, tz = "US/Pacific"),
+    read_activity_csv(tempcsv_6, tzone = "US/Pacific"),
     csv_animal_out
   )
 })
 
 test_that("read_activity_csv() outputs start in the correct time zone for animal-level metrics", {
   expect_equal(
-    read_activity_csv(tempcsv_6, tz = "US/Pacific") |>
+    read_activity_csv(tempcsv_6, tzone = "US/Pacific") |>
       mutate(start = as.character(start)),
     csv_animal_out |>
       mutate(start = as.character(start))

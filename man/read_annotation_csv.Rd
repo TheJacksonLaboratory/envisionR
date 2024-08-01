@@ -4,12 +4,12 @@
 \alias{read_annotation_csv}
 \title{A Function to Read JAX Envision® annotation CSVs}
 \usage{
-read_annotation_csv(csv, tz = NULL)
+read_annotation_csv(csv, tzone = NULL)
 }
 \arguments{
 \item{csv}{File path for the Envision® annotation CSV.}
 
-\item{tz}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
+\item{tzone}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
 }
 \value{
 A \code{tibble} with annotation data optimally formatted for downstream analysis.
@@ -46,7 +46,7 @@ annotation_csv <- tempfile("testannotation", fileext = ".csv")
 readr::write_lines(annotation_csv_example, file = annotation_csv)
 
 # Reading in test CSV file
-annotation <- read_annotation_csv(csv = annotation_csv, tz = "US/Pacific")
+annotation <- read_annotation_csv(csv = annotation_csv, tzone = "US/Pacific")
 
 # Glimpsing annotation CSV
 dplyr::glimpse(annotation)

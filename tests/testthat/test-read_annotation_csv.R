@@ -69,14 +69,14 @@ csv_out <- read.csv(text = annotation_csv_example) |>
 # Doing the tests
 test_that("read_annotation_csv() returns expected tibble with default parameters", {
   expect_equal(
-    read_annotation_csv(tempcsv_1, tz = "US/Pacific"),
+    read_annotation_csv(tempcsv_1, tzone = "US/Pacific"),
     csv_out
   )
 })
 
 test_that("read_annotation_csv() returns data in correct time zone", {
   expect_equal(
-    read_annotation_csv(tempcsv_1, tz = "US/Pacific") |>
+    read_annotation_csv(tempcsv_1, tzone = "US/Pacific") |>
       mutate(
         created = as.character(created),
         pin_start_time = as.character(pin_start_time),
@@ -92,7 +92,7 @@ test_that("read_annotation_csv() returns data in correct time zone", {
 })
 
 test_that("read_annotation_csv() returns no warnings with default parameters and matching time zones", {
-  expect_no_warning(read_annotation_csv(tempcsv_1, tz = "US/Pacific"))
+  expect_no_warning(read_annotation_csv(tempcsv_1, tzone = "US/Pacific"))
 })
 
 test_that("read_annotation_csv() throws a warning when time zone is omitted", {
@@ -102,13 +102,13 @@ test_that("read_annotation_csv() throws a warning when time zone is omitted", {
 })
 
 test_that("read_annotation_csv() throws a warning when started time zone mismatches UTC offset", {
-  expect_warning(read_annotation_csv(tempcsv_1, tz = "Canada/Newfoundland"),
+  expect_warning(read_annotation_csv(tempcsv_1, tzone = "Canada/Newfoundland"),
     regexp = "^UTC offset for the \\w+/\\w+ time zone mismatches suggested time zones.$"
   )
 })
 
 test_that("read_annotation_csv() throws an error when started time zone does not exist", {
-  expect_error(read_annotation_csv(tempcsv_1, tz = "Canada/New_Foundland"),
+  expect_error(read_annotation_csv(tempcsv_1, tzone = "Canada/New_Foundland"),
     regexp = "^time zone \\w+/\\w+ is not a system time zone.$"
   )
 })
@@ -121,13 +121,13 @@ test_that("read_annotation_csv() throws an error when multiple irreconcilable UT
 
 test_that("read_annotation_csv() works with a different version", {
   expect_equal(
-    read_annotation_csv(tempcsv_3, tz = "US/Pacific"),
+    read_annotation_csv(tempcsv_3, tzone = "US/Pacific"),
     csv_out
   )
 })
 
 test_that("read_annotation_csv() throws an error when a version doesn't exist", {
-  expect_error(read_annotation_csv(tempcsv_4, tz = "US/Pacific"),
+  expect_error(read_annotation_csv(tempcsv_4, tzone = "US/Pacific"),
     regexp = "^invalid Envision csv version number: vDOESNOTEXIST$"
   )
 })
