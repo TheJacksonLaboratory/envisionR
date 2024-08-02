@@ -32,6 +32,20 @@ writeLines(csv_header_error, tempcsv_5)
 tempcsv_6 <- tempfile("testactivity", fileext = ".csv")
 writeLines(activity_animal_csv_example, tempcsv_6)
 
+envision_meta_1 <- list(
+  study_name = "A", tzone = "US/Pacific",
+  lights_on = hms::as_hms("06:00:00"),
+  lights_off = hms::as_hms("18:00:00"),
+  org = 1001, study = 1002
+)
+
+envision_meta_2 <- list(
+  study_name = "A", tzone = as.character(NA),
+  lights_on = hms::as_hms("06:00:00"),
+  lights_off = hms::as_hms("18:00:00"),
+  org = 1001, study = 1002
+)
+
 # Making the data frame with variable types that should match the wrangled CSV file
 csv_cage_out <- read.csv(text = activity_cage_csv_example) |>
   tibble::as_tibble() |>
@@ -85,6 +99,33 @@ test_that("read_activity_csv() returns expected tibble with default parameters",
     csv_cage_out
   )
 })
+
+test_that("read_activity_csv() returns expected tibble with metadata", {
+  expect_equal(
+    read_activity_csv(tempcsv_1, metadata = envision_meta_1),
+    csv_cage_out
+  )
+})
+
+test_that("read_activity_csv() works as expected with NA time zone metadata", {
+  expect_warning(
+    x1 <- read_activity_csv(tempcsv_1, metadata = envision_meta_2),
+    "Assuming time zone: US/Pacific. Set time zone explicitly if different."
+  )
+  expect_equal(x1, csv_cage_out)
+})
+
+test_that("read_activity_csv() works as expected with time zone metadata", {
+  expect_warning(
+    x2 <- read_activity_csv(tempcsv_1,
+      metadata = envision_meta_1,
+      tzone = "US/Pacific"
+    ),
+    "time zone info provided in both metadata and arguments, assuming the argument passed to tzone is the time zone"
+  )
+  expect_equal(x2, csv_cage_out)
+})
+
 
 test_that("read_activity_csv() returns no warnings with default parameters and matching time zones", {
   expect_no_warning(read_activity_csv(tempcsv_1, tzone = "US/Pacific"))

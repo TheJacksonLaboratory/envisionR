@@ -25,6 +25,20 @@ csv_lines_versionerror <- c("# Version: DOESNOTEXIST", annotation_csv_example)
 tempcsv_4 <- tempfile("testannotation_version_error", fileext = ".csv")
 writeLines(csv_lines_versionerror, tempcsv_4)
 
+envision_meta_1 <- list(
+  study_name = "A", tzone = "US/Pacific",
+  lights_on = hms::as_hms("06:00:00"),
+  lights_off = hms::as_hms("18:00:00"),
+  org = 1001, study = 1002
+)
+
+envision_meta_2 <- list(
+  study_name = "A", tzone = as.character(NA),
+  lights_on = hms::as_hms("06:00:00"),
+  lights_off = hms::as_hms("18:00:00"),
+  org = 1001, study = 1002
+)
+
 # Making the data frame with variable types that should match the wrangled CSV file
 csv_out <- read.csv(text = annotation_csv_example) |>
   tibble::as_tibble() |>
@@ -72,6 +86,32 @@ test_that("read_annotation_csv() returns expected tibble with default parameters
     read_annotation_csv(tempcsv_1, tzone = "US/Pacific"),
     csv_out
   )
+})
+
+test_that("read_annotation_csv() returns expected tibble with metadata", {
+  expect_equal(
+    read_annotation_csv(tempcsv_1, metadata = envision_meta_1),
+    csv_out
+  )
+})
+
+test_that("read_annotation_csv() works as expected with NA time zone metadata", {
+  expect_warning(
+    x1 <- read_annotation_csv(tempcsv_1, metadata = envision_meta_2),
+    "Assuming time zone: US/Pacific. Set time zone explicitly if different."
+  )
+  expect_equal(x1, csv_out)
+})
+
+test_that("read_annotation_csv() works as expected with time zone metadata", {
+  expect_warning(
+    x2 <- read_annotation_csv(tempcsv_1,
+      metadata = envision_meta_1,
+      tzone = "US/Pacific"
+    ),
+    "time zone info provided in both metadata and arguments, assuming the argument passed to tzone is the time zone"
+  )
+  expect_equal(x2, csv_out)
 })
 
 test_that("read_annotation_csv() returns data in correct time zone", {
