@@ -4,10 +4,12 @@
 \alias{read_annotation_csv}
 \title{A Function to Read JAX Envision® annotation CSVs}
 \usage{
-read_annotation_csv(csv, tzone = NULL)
+read_annotation_csv(csv, metadata = NULL, tzone = NULL)
 }
 \arguments{
 \item{csv}{File path for the Envision® annotation CSV.}
+
+\item{metadata}{a metadata object returned by \code{envision_metadata()}}
 
 \item{tzone}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
 }
