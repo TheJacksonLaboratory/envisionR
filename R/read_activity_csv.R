@@ -47,14 +47,15 @@ read_activity_csv <- function(csv, metadata = NULL,
   if (!is.null(metadata)) {
     # Running some checks on the metadata
     stopifnot(is.list(metadata))
-    stopifnot(is.character(metadata[["tzone"]]))
-    stopifnot(metadata[["tzone"]] %in% timezones_df$tz_name)
 
-    if (is.null(tzone)) {
-      tzone <- ifelse(is.na(metadata[["tzone"]]),
-        NULL, metadata[["tzone"]]
-      )
-    } else {
+    if (!is.na(metadata[["tzone"]])) {
+      stopifnot(is.character(metadata[["tzone"]]))
+      stopifnot(metadata[["tzone"]] %in% timezones_df$tz_name)
+    }
+
+    if (is.null(tzone) & !is.na(metadata[["tzone"]])) {
+      tzone <- metadata[["tzone"]]
+    } else if (!is.null(tzone) & !is.na(metadata[["tzone"]])) {
       warning(
         "time zone info provided in both metadata and arguments, ",
         "assuming the argument passed to tzone is the time zone"

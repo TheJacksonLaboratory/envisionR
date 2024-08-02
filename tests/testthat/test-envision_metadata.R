@@ -26,7 +26,7 @@ envision_meta_2 <- list(
 )
 
 envision_meta_3 <- list(
-  study_name = "A", tzone = NA,
+  study_name = "A", tzone = as.character(NA),
   lights_on = hms::as_hms("06:00:00"),
   lights_off = hms::as_hms("18:00:00"),
   org = 1001, study = 1002

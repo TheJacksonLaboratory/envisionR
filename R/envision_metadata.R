@@ -60,7 +60,7 @@ envision_metadata <- function(study_name = "",
     }
   } else {
     if (override_tzassume) {
-      tzone <- NA
+      tzone <- as.character(NA)
       if (!quietly) {
         warning(
           "no time zone information, using NA"
