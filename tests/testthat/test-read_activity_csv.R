@@ -125,7 +125,7 @@ test_that("read_activity_csv() throws an error when multiple irreconcilable UTC 
 
 test_that("read_activity_csv() works with vTEST", {
   expect_equal(
-    read_activity_csv(tempcsv_3, "US/Pacific"),
+    read_activity_csv(tempcsv_3, tzone = "US/Pacific"),
     csv_cage_out
   )
 })

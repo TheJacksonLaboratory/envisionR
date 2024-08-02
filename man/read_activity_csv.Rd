@@ -4,10 +4,12 @@
 \alias{read_activity_csv}
 \title{A Function to Read JAX Envision® activity CSVs}
 \usage{
-read_activity_csv(csv, tzone = NULL, metrics = NULL)
+read_activity_csv(csv, metadata = NULL, tzone = NULL, metrics = NULL)
 }
 \arguments{
 \item{csv}{File path for the Envision® CSV.}
+
+\item{metadata}{a metadata object returned by \code{envision_metadata()}}
 
 \item{tzone}{Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.}
 
