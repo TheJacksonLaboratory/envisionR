@@ -32,7 +32,7 @@
 #' @note For any other time zones, the function `list_tzones()` will produce a
 #'  data frame containing all valid time zone designations in the `tz_name`
 #'  column.
-
+#' @export
 envision_metadata <- function(study_name = "",
                               tzone = NULL,
                               lights_on = NULL,
