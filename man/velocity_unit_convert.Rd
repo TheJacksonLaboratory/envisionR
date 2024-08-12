@@ -20,6 +20,9 @@ Valid values for distance are:
 \item \code{cm}: centimeters
 \item \code{m}: meters
 \item \code{km}: kilometers
+\item \code{in}: inches
+\item \code{ft}: feet
+\item \code{yd}: yards
 }
 Valid values for time are:
 \itemize{

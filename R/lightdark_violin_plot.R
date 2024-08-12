@@ -4,13 +4,18 @@ lightdark_violin_plot <- function(activity_data,
                                   visualize_on = NULL,
                                   yvar = NULL,
                                   colors = NULL,
-                                  y_axis_label = NULL) {
+                                  y_axis_label = NULL,
+                                  quietly = FALSE) {
   stopifnot(requireNamespace("ggplot2"))
   stopifnot(requireNamespace("tibble"))
   stopifnot(requireNamespace("dplyr"))
   stopifnot(requireNamespace("scales"))
 
-  stopifnot("data is not a tibble" = is_tibble(activity_data))
+  # binding global variables
+  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <- NULL
+
+
+  stopifnot("data is not a tibble" = tibble::is_tibble(activity_data))
   stopifnot(
     "the column title in yvar is not in activity_data" =
       yvar %in% colnames(activity_data)
@@ -40,12 +45,12 @@ lightdark_violin_plot <- function(activity_data,
   activity_data[, "var_col"] <- activity_data[, yvar]
 
   if (is.null(colors)) {
-    plotcolors <- scales::hue_pal()(length(unique(pull(activity_data, "visualize"))))
+    plotcolors <- scales::hue_pal()(length(unique(dplyr::pull(activity_data, "visualize"))))
   } else {
-    if (length(colors) < length(unique(pull(activity_data, "visualize")))) {
+    if (length(colors) < length(unique(dplyr::pull(activity_data, "visualize")))) {
       stop("insufficient number of colors provided")
-    } else if (length(colors) > length(unique(pull(activity_data, "visualize"))) & !quietly) {
-      warn("more colors provided than number of grouping variables")
+    } else if (length(colors) > length(unique(dplyr::pull(activity_data, "visualize"))) & !quietly) {
+      warning("more colors provided than number of grouping variables")
     } else {
       plotcolors <- colors
     }
@@ -62,7 +67,7 @@ lightdark_violin_plot <- function(activity_data,
 
   violinplot <- ggplot2::ggplot(
     data = activity_data,
-    aes(
+    ggplot2::aes(
       x = cage_name,
       y = var_col,
       color = visualize
@@ -80,7 +85,7 @@ lightdark_violin_plot <- function(activity_data,
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      panel.grid = element_line(color = "#FFFFFF"),
+      panel.grid = ggplot2::element_line(color = "#FFFFFF"),
       legend.position = "bottom"
     ) +
     ggplot2::xlab("Cage") +
