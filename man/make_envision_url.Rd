@@ -22,7 +22,7 @@ make_envision_url(
 
 \item{cage}{Cage number for the video.}
 
-\item{vidstart}{Start time of the video (usually a \code{timepoint} or \code{instant} created with the \code{lubridate} package).}
+\item{vidstart}{Start time of the video (a \code{POSIXct} object).}
 
 \item{windowstart_h}{Hours before the start of the video for the window.}
 

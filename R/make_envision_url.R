@@ -5,7 +5,7 @@
 #' @param org Organization number of the video.
 #' @param study Study number of the video.
 #' @param cage Cage number for the video.
-#' @param vidstart Start time of the video (usually a \code{timepoint} or \code{instant} created with the \code{lubridate} package).
+#' @param vidstart Start time of the video (a \code{POSIXct} object).
 #' @param windowstart_h Hours before the start of the video for the window.
 #' @param windowend_h Hours after the start of the video for the window.
 #' @param metricstab Which metrics tab to return (either \code{"cage"}, \code{"animal"}, or \code{"alpha"}).
