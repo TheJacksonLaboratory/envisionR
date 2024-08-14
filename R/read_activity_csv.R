@@ -97,6 +97,8 @@ read_activity_csv_raw <- function(csv, tzone = NULL,
     value = TRUE
   )
   header_col_csv <- grep("^start,", first10_csv, value = TRUE)
+  colnames_csv <- unlist(strsplit(header_col_csv, ","))
+  movement_col <- grep("^movement", colnames_csv, value = TRUE)
 
   if (length(activity_csv_version) == 0) {
     activity_csv_version <- "v0.0.0.9000"
@@ -115,9 +117,9 @@ read_activity_csv_raw <- function(csv, tzone = NULL,
 
   if (is.null(metrics)) {
     metrics <- tolower(gsub(
-      "^.*movement\\.(.*)\\.cm_s.*$",
+      "^movement\\.(.*)\\.cm_s\\..*$",
       "\\1",
-      header_col_csv
+      movement_col
     ))
     if (grepl("animal", metrics)) {
       metrics <- "animal"
@@ -126,10 +128,16 @@ read_activity_csv_raw <- function(csv, tzone = NULL,
     }
   }
 
+  timespan <- tolower(gsub(
+    "^movement\\..*\\.cm_s\\.(.*)$",
+    "\\1",
+    movement_col
+  ))
+
   # Getting definitions of columns by version
   metrics <- tolower(metrics)
   if (metrics %in% c("cage", "animal")) {
-    metrics <- paste0(metrics, "_activity")
+    metrics <- paste0(metrics, "_activity_", timespan)
     activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
   } else {
     stop("metrics should be defined as either cage or animal level")
@@ -214,7 +222,8 @@ read_activity_csv_raw <- function(csv, tzone = NULL,
     dplyr::mutate(
       start = as.POSIXct(start, tz = tz_assume),
       tzone = tz_assume
-    )
+    ) |>
+    dplyr::arrange(group_name, cage_name, start)
 
   return(activity_data)
 }

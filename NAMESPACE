@@ -2,8 +2,8 @@
 
 export(envision_metadata)
 export(get_utc_offset)
-export(group_level_summarize)
-export(group_summary_plot)
+export(group_level_mean_sem)
+export(group_mean_sem_ribbon_plot)
 export(lightdark_times)
 export(lightdark_violin_plot)
 export(list_tzones)

@@ -20,7 +20,7 @@ csv_column_defs <- list(
     RFID = readr::col_character(),
     `Tail tattoo` = readr::col_character()
   )),
-  cage_activity = list("v0.0.0.9000" = list(
+  cage_activity_hour = list("v0.0.0.9000" = list(
     start = readr::col_datetime(format = ""),
     start.date.local = readr::col_date(format = ""),
     start.time.local = readr::col_time(format = ""),
@@ -35,7 +35,7 @@ csv_column_defs <- list(
     food_occupancy.mean.per_cage.s.hour = readr::col_double(),
     water_occupancy.mean.per_cage.s.hour = readr::col_double()
   )),
-  animal_activity = list("v0.0.0.9000" = list(
+  animal_activity_hour = list("v0.0.0.9000" = list(
     start = readr::col_datetime(format = ""),
     start.date.local = readr::col_date(format = ""),
     start.time.local = readr::col_time(format = ""),
@@ -54,6 +54,76 @@ csv_column_defs <- list(
     wheel_occupancy.animal.s.hour = readr::col_double(),
     food_occupancy.animal.s.hour = readr::col_double(),
     water_occupancy.animal.s.hour = readr::col_double()
+  )),
+  cage_activity_10min = list("v0.0.0.9000" = list(
+    start = readr::col_datetime(format = ""),
+    start.date.local = readr::col_date(format = ""),
+    start.time.local = readr::col_time(format = ""),
+    study.code = readr::col_character(),
+    aggregation.seconds = readr::col_double(),
+    group.name = readr::col_character(),
+    cage.name = readr::col_character(),
+    animals.cage.quantity = readr::col_integer(),
+    light.cycle = readr::col_character(),
+    movement.mean.per_cage.cm_s.10min = readr::col_double(),
+    wheel_occupancy.mean.per_cage.s.10min = readr::col_double(),
+    food_occupancy.mean.per_cage.s.10min = readr::col_double(),
+    water_occupancy.mean.per_cage.s.10min = readr::col_double()
+  )),
+  animal_activity_10min = list("v0.0.0.9000" = list(
+    start = readr::col_datetime(format = ""),
+    start.date.local = readr::col_date(format = ""),
+    start.time.local = readr::col_time(format = ""),
+    study.code = readr::col_character(),
+    aggregation.seconds = readr::col_double(),
+    group.name = readr::col_character(),
+    cage.name = readr::col_character(),
+    animals.cage.quantity = readr::col_integer(),
+    light.cycle = readr::col_character(),
+    animal.id = readr::col_character(),
+    strain = readr::col_character(),
+    sex = readr::col_character(),
+    genotype = readr::col_character(),
+    birth.date = readr::col_date(format = ""),
+    movement.animal.cm_s.10min = readr::col_double(),
+    wheel_occupancy.animal.s.10min = readr::col_double(),
+    food_occupancy.animal.s.10min = readr::col_double(),
+    water_occupancy.animal.s.10min = readr::col_double()
+  )),
+  cage_activity_min = list("v0.0.0.9000" = list(
+    start = readr::col_datetime(format = ""),
+    start.date.local = readr::col_date(format = ""),
+    start.time.local = readr::col_time(format = ""),
+    study.code = readr::col_character(),
+    aggregation.seconds = readr::col_double(),
+    group.name = readr::col_character(),
+    cage.name = readr::col_character(),
+    animals.cage.quantity = readr::col_integer(),
+    light.cycle = readr::col_character(),
+    movement.mean.per_cage.cm_s.min = readr::col_double(),
+    wheel_occupancy.mean.per_cage.s.min = readr::col_double(),
+    food_occupancy.mean.per_cage.s.min = readr::col_double(),
+    water_occupancy.mean.per_cage.s.min = readr::col_double()
+  )),
+  animal_activity_min = list("v0.0.0.9000" = list(
+    start = readr::col_datetime(format = ""),
+    start.date.local = readr::col_date(format = ""),
+    start.time.local = readr::col_time(format = ""),
+    study.code = readr::col_character(),
+    aggregation.seconds = readr::col_double(),
+    group.name = readr::col_character(),
+    cage.name = readr::col_character(),
+    animals.cage.quantity = readr::col_integer(),
+    light.cycle = readr::col_character(),
+    animal.id = readr::col_character(),
+    strain = readr::col_character(),
+    sex = readr::col_character(),
+    genotype = readr::col_character(),
+    birth.date = readr::col_date(format = ""),
+    movement.animal.cm_s.min = readr::col_double(),
+    wheel_occupancy.animal.s.min = readr::col_double(),
+    food_occupancy.animal.s.min = readr::col_double(),
+    water_occupancy.animal.s.min = readr::col_double()
   )),
   annotation = list("v0.0.0.9000" = list(
     ID = readr::col_double(),
@@ -75,8 +145,16 @@ csv_column_defs <- list(
 )
 
 csv_column_defs[["demographics"]][["vTEST"]] <- csv_column_defs[["demographics"]][["v0.0.0.9000"]]
-csv_column_defs[["cage_activity"]][["vTEST"]] <- csv_column_defs[["cage_activity"]][["v0.0.0.9000"]]
-csv_column_defs[["animal_activity"]][["vTEST"]] <- csv_column_defs[["animal_activity"]][["v0.0.0.9000"]]
+
+csv_column_defs[["cage_activity_hour"]][["vTEST"]] <- csv_column_defs[["cage_activity_hour"]][["v0.0.0.9000"]]
+csv_column_defs[["animal_activity_hour"]][["vTEST"]] <- csv_column_defs[["animal_activity_hour"]][["v0.0.0.9000"]]
+
+csv_column_defs[["cage_activity_10min"]][["vTEST"]] <- csv_column_defs[["cage_activity_10min"]][["v0.0.0.9000"]]
+csv_column_defs[["animal_activity_10min"]][["vTEST"]] <- csv_column_defs[["animal_activity_10min"]][["v0.0.0.9000"]]
+
+csv_column_defs[["cage_activity_min"]][["vTEST"]] <- csv_column_defs[["cage_activity_min"]][["v0.0.0.9000"]]
+csv_column_defs[["animal_activity_min"]][["vTEST"]] <- csv_column_defs[["animal_activity_min"]][["v0.0.0.9000"]]
+
 csv_column_defs[["annotation"]][["vTEST"]] <- csv_column_defs[["annotation"]][["v0.0.0.9000"]]
 
 usethis::use_data(csv_column_defs, internal = FALSE, overwrite = TRUE)
