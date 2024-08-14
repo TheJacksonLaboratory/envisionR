@@ -23,5 +23,6 @@ Imports:
     readr,
     tibble,
     ggplot2,
-    scales
-    
+    scales,
+    stats,
+    utils

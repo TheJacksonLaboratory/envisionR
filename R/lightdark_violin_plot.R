@@ -29,6 +29,10 @@ lightdark_violin_plot <- function(activity_data,
     activity_data <- activity_data |>
       dplyr::group_by(cage_name) |>
       dplyr::mutate(
+        animals_cage_quantity = ifelse(animals_cage_quantity == 0,
+          NA,
+          animals_cage_quantity
+        ),
         visualize = min(animals_cage_quantity, na.rm = TRUE),
         visualize = paste(visualize, ifelse(visualize == 1,
           "animal",
@@ -39,7 +43,7 @@ lightdark_violin_plot <- function(activity_data,
   } else if (visualize_on == "group") {
     activity_data <- activity_data |>
       dplyr::group_by(cage_name) |>
-      dplyr::mutate(visualize = group)
+      dplyr::mutate(visualize = group_name)
     legendtitle <- "Group"
   }
   activity_data[, "var_col"] <- activity_data[, yvar]
