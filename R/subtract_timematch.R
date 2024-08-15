@@ -3,22 +3,18 @@ subtract_timematch <- function(activity_data,
                                var = "movement_mean_per_cage_cm_s_hour",
                                occupancy_normalize = TRUE,
                                quietly = FALSE) {
+  df_i <- unique_cages <- NULL
   stopifnot(requireNamespace("dplyr"))
   stopifnot(requireNamespace("tibble"))
   activity_data <- as.data.frame(activity_data)
   if (occupancy_normalize) {
     activity_data[, "raw"] <- ifelse(activity_data[, "animals_cage_quantity"] != 0,
-      activity_data[, var] / activity_data[, "animals_cage_quantity"],
-      NA
+                                     activity_data[, var] / activity_data[, "animals_cage_quantity"],
+                                     NA
     )
   } else {
     activity_data[, "raw"] <- activity_data[, var]
   }
-
-  unique_cages <- activity_data |>
-    pull(cage_name) |>
-    unique()
-  warn_internal_na <- FALSE
 
   unique_cages <- activity_data |>
     pull(cage_name) |>
@@ -44,7 +40,7 @@ subtract_timematch <- function(activity_data,
       to = max_start_cage_i,
       by = time_i
     )
-    cage_df_i <- data.frame(
+    df_i <- data.frame(
       start = seq_cage_i,
       cage_name = i,
       subtract_var = var,
@@ -59,40 +55,39 @@ subtract_timematch <- function(activity_data,
         hour = format(start, "%H:%M:%S"),
         leading_trailing_na = FALSE
       )
-    leading_nas <- head(which(!is.na(cage_df_i[, "raw"])), 1)
-    trailing_nas <- tail(which(!is.na(cage_df_i[, "raw"])), 1)
-    rows_i <- seq_len(nrow(cage_df_i))
+    leading_nas <- head(which(!is.na(df_i[, "raw"])), 1)
+    trailing_nas <- tail(which(!is.na(df_i[, "raw"])), 1)
+    rows_i <- seq_len(nrow(df_i))
     leading_trailing_nas_rows <- rows_i[which(rows_i < leading_nas | rows_i > trailing_nas)]
-    cage_df_i[leading_trailing_nas_rows, "leading_trailing_na"] <- TRUE
-    cage_df_i[, "internal_na"] <- is.na(cage_df_i[, "raw"]) & !(cage_df_i[, "leading_trailing_na"])
-    impute_i <- which(cage_df_i[, "internal_na"])
+    df_i[leading_trailing_nas_rows, "leading_trailing_na"] <- TRUE
+    df_i[, "internal_na"] <- is.na(df_i[, "raw"]) & !(df_i[, "leading_trailing_na"])
+    impute_i <- which(df_i[, "internal_na"])
     warn_internal_na <- ifelse(length(impute_i > 0), TRUE, warn_internal_na)
     # imputing internal NAs
-    cage_df_i <- cage_df_i |>
+    df_i <- df_i |>
       dplyr::group_by(hour) |>
-      dplyr::mutate(impute = ifelse(internal_na, mean(raw, na.rm = TRUE), raw)) |>
+      dplyr::mutate(impute = ifelse(internal_na,
+                                    base::mean(raw, na.rm = TRUE),
+                                    raw)) |>
       dplyr::ungroup()
-    # doing subtraction
-    cage_df_i <- cage_df_i |>
-      dplyr::group_by(group_name, cage_name, hour) |>
-      dplyr::arrange(group_name, cage_name, hour, start) |>
-      dplyr::mutate(time_matched_subtracted = impute - lag(impute, 1)) |>
-      dplyr::ungroup() |>
-      dplyr::arrange(group_name, cage_name, start)
 
-    cage_df_i <- tibble::as_tibble(cage_df_i)
     if (i == unique_cages[1]) {
-      cage_tsd_df <- cage_df_i
+      cage_sub_df <- df_i
     } else {
-      cage_tsd_df <- rbind(
-        cage_tsd_df,
-        cage_df_i
+      cage_sub_df <- rbind(
+        cage_sub_df,
+        df_i
       )
     }
   }
-  cage_tsd_df <- cage_tsd_df |>
+  cage_sub_df <- cage_sub_df |>
     dplyr::ungroup() |>
-    dplyr::arrange(group_name, cage_name, start)
+    dplyr::arrange(cage_name, hour, start) |>
+    dplyr::group_by(cage_name, hour) |>
+    dplyr::mutate(time_matched_subtracted = impute - dplyr::lag(impute, 1)) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(group_name, cage_name, start) |>
+    dplyr::as_tibble()
 
-  return(cage_tsd_df)
+  return(cage_sub_df)
 }
