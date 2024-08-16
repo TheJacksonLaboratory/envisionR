@@ -9,8 +9,8 @@ subtract_timematch <- function(activity_data,
   activity_data <- as.data.frame(activity_data)
   if (occupancy_normalize) {
     activity_data[, "raw"] <- ifelse(activity_data[, "animals_cage_quantity"] != 0,
-                                     activity_data[, var] / activity_data[, "animals_cage_quantity"],
-                                     NA
+      activity_data[, var] / activity_data[, "animals_cage_quantity"],
+      NA
     )
   } else {
     activity_data[, "raw"] <- activity_data[, var]
@@ -67,8 +67,9 @@ subtract_timematch <- function(activity_data,
     df_i <- df_i |>
       dplyr::group_by(hour) |>
       dplyr::mutate(impute = ifelse(internal_na,
-                                    base::mean(raw, na.rm = TRUE),
-                                    raw)) |>
+        base::mean(raw, na.rm = TRUE),
+        raw
+      )) |>
       dplyr::ungroup()
 
     if (i == unique_cages[1]) {

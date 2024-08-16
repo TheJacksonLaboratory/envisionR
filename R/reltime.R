@@ -9,7 +9,7 @@
 #' @param offset value given for the offset from 0 in the relative in the same units as \code{units} (default: \code{0}).
 #' @returns a \code{vector} of relative time in the given units.
 #' @keywords Envision
-
+#' @export
 reltime <- function(rawtimes,
                     reftimes,
                     units = c(
