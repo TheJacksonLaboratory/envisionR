@@ -14,7 +14,7 @@ test_that("weighted_sem() returns expected value", {
 test_that("weighted_sem() returns expected value with NAs and na.rm as TRUE", {
   # Getting required packages
   expect_equal(
-    weighted_sem(x = c(x, NA), w = c(wts, NA), na.rm = TRUE),
+    weighted_sem(x = c(x, NA), w = c(wts, 1), na.rm = TRUE),
     2
   )
 })
@@ -22,7 +22,7 @@ test_that("weighted_sem() returns expected value with NAs and na.rm as TRUE", {
 test_that("weighted_sem() returns expected value with and na.rm as FALSE", {
   # Getting required packages
   expect_equal(
-    weighted_sem(x = c(x, NA), w = c(wts, NA), na.rm = FALSE),
+    weighted_sem(x = c(x, NA), w = c(wts, 1), na.rm = FALSE),
     as.numeric(NA)
   )
 })

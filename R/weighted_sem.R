@@ -13,12 +13,15 @@ weighted_sem <- function(x, w, na.rm = FALSE) {
   # computing the variables needed for weighted sem
   xbar <- sum(w * x, na.rm = na_rm) / sumweights
   weighted_var <- sum(w * ((x - xbar)^2) / (sumweights - 1), na.rm = na_rm)
-  kish_ess <- kish_ess(w)
+  kish_ess <- kish_ess(w, na.rm = na_rm)
 
   # returning the weighted standard error
   return(sqrt(weighted_var) / sqrt(kish_ess))
 }
 
-kish_ess <- function(w) {
+kish_ess <- function(w, na.rm = TRUE) {
+  if (na.rm == TRUE) {
+    w <- w[which(!is.na(w))]
+  }
   return(sum(w)^2 / sum(w^2))
 }
