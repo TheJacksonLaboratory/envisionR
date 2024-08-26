@@ -1,6 +1,6 @@
 # Unit tests for the weighted_sem() function.
 # Constructing an artificial dataset with a weighted SEM of 2
-x <- c(12, 12, 24, 0, 12, 12, 12, 9, 9, 15, 15)
+x <- c(0, 0, 12, -12, 0, 0, 0, -3, -3, 3, 3)
 wts <- c(3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1)
 
 test_that("weighted_sem() returns expected value", {
