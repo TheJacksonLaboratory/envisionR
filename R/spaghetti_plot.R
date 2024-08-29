@@ -83,6 +83,7 @@ spaghetti_plot <- function(activity_data,
       stop("insufficient number of colors provided")
     } else if (length(colors) > length(unique(dplyr::pull(activity_data, "visualize"))) & !quietly) {
       warning("more colors provided than number of grouping variables")
+      plotcolors <- colors[seq_len(length(unique(dplyr::pull(activity_data, "visualize"))))]
     } else {
       plotcolors <- colors
     }
@@ -113,7 +114,7 @@ spaghetti_plot <- function(activity_data,
           end_date = date_range[2],
           tzone = tzone_md
         ) |>
-          mutate(ymin = -Inf, ymax = Inf)
+          dplyr::mutate(ymin = -Inf, ymax = Inf)
       }
     } else {
       if (is.null(lights_on) | is.null(lights_off)) {
@@ -138,7 +139,7 @@ spaghetti_plot <- function(activity_data,
     xrange <- xminmax[2] - xminmax[1]
     xminmax_plot <- xminmax
   } else {
-    stopifnot(is.POSIXct(xlims))
+    stopifnot(inherits(xlims, "POSIXct"))
     stopifnot(length(xlims) == 2)
     stopifnot(xlims[1] < xlims[2])
     xminmax_plot <- xlims
@@ -161,7 +162,7 @@ spaghetti_plot <- function(activity_data,
   spaghettiplot <- ggplot2::ggplot() +
     ggplot2::geom_rect(
       data = lightdark_df,
-      aes(
+      ggplot2::aes(
         xmin = lights_off,
         xmax = lights_on,
         ymin = ymin,
