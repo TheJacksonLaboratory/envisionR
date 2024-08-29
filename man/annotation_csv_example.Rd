@@ -11,7 +11,7 @@ a character vector with 5 lines, the first line is a header.
 data(annotation_csv_example)
 }
 \description{
-A dataset containing four lines of fabricated JAX Envision® annotation data.
+A dataset containing four lines of dummy JAX Envision® annotation data.
 These lines follow the format of a JAX Envision® annotation CSV.
 When read properly, the lines for annotation data have column titles as follows:
 }

@@ -83,7 +83,7 @@ read_activity_csv_raw <- function(csv, tzone = NULL,
   # Doing variable bindings
   start_date_local <- start_time_local <- startlocal_utc <-
     start <- utc_offset_h <- min_starttime <- assume <- min_starttime_utc <-
-    tz_name <- is_dst <- tz_isdst <- NULL
+    tz_name <- is_dst <- tz_isdst <- group_name <- cage_name <- NULL
 
   # Looking for a version of the activity CSV
   first10_csv <- base::readLines(csv, n = 10)

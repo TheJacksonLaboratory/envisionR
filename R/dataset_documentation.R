@@ -1,6 +1,6 @@
 #' Dummy JAX Envision® annotation CSV lines formatted the same as exported annotation data.
 #'
-#' A dataset containing four lines of fabricated JAX Envision® annotation data.
+#' A dataset containing four lines of dummy JAX Envision® annotation data.
 #'  These lines follow the format of a JAX Envision® annotation CSV.
 #'  When read properly, the lines for annotation data have column titles as follows:
 #'
@@ -34,7 +34,7 @@ NULL
 
 #' Dummy JAX Envision® cage-level activity CSV lines formatted the same as exported activity data.
 #'
-#' A dataset containing four lines of fabricated JAX Envision® activity data.
+#' A dataset containing four lines of dummy JAX Envision® activity data.
 #'  These lines follow the format of a JAX Envision® cage-level activity CSV.
 #'  When read properly, the lines for cage-level data have raw column titles as follows:
 #'
@@ -64,7 +64,7 @@ NULL
 
 #' Dummy JAX Envision® animal-level activity CSV lines formatted the same as exported activity data.
 #'
-#' A dataset containing four lines of fabricated JAX Envision® activity data.
+#' A dataset containing four lines of dummy JAX Envision® activity data.
 #'  These lines follow the format of a JAX Envision® animal-level activity CSV.
 #'  When read properly, the lines for cage-level data have raw column titles as follows:
 #'
@@ -110,7 +110,7 @@ NULL
 
 #' Dummy JAX Envision® demographic CSV lines formatted the same as exported demographic data.
 #'
-#' A dataset containing four lines of fabricated JAX Envision® demographics data.
+#' A dataset containing four lines of dummy JAX Envision® demographics data.
 #'  These lines follow the format of a JAX Envision® demographics CSV.
 #'  When read properly, the lines for demographics data have raw column titles as follows:
 #'
@@ -140,4 +140,34 @@ NULL
 #' @name demographics_csv_example
 #' @usage data(demographics_csv_example)
 #' @format a character vector with 5 lines, the first line is a header.
+NULL
+
+#' Dummy JAX Envision® cage-level activity dataset formatted the same as exported activity data.
+#'
+#' A dataset containing dummy JAX Envision® activity data.
+#'  These data have circadian variation with some random and uncorrelated noise in them.
+#'  The column headers are as follows:
+#'
+#'  \itemize{
+#'    \item \code{start}. the date and time at the start of the aggregation bin (coerced from UTC to local time).
+#'    \item \code{start_date_local}. the start date (in the time zone in which the data were collected).
+#'    \item \code{start_time_local}. the start time (in the time zone in which the data were collected).
+#'    \item \code{study_code}. a unique code for each study.
+#'    \item \code{aggregation_seconds}. the number of seconds aggregated to generate this dataset (3600 is 1 hour).
+#'    \item \code{group_name}. a user-defined group name, often used to label experimental groups of interest.
+#'    \item \code{cage_name}. the name of the cage that the data represent.
+#'    \item \code{animals_cage_quantity}. the number of animals in the cage, sometimes called cage density or occupancy.
+#'    \item \code{light_cycle}. whether the data were collected in the light or dark cycle.
+#'    \item \code{movement_mean_per_cage_cm_s_hour}. cage-level movement in cm/s for a specified period of time (1 hour in this example)
+#'    \item \code{wheel_occupancy_mean_per_cage_animals_hour}. amount of time spent on the wheel at the cage level.
+#'    \item \code{food_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the food hopper at the cage level.
+#'    \item \code{water_occupancy_mean_per_cage_animals_hour}. amount of time spent in proximity to the water bottles at the cage level.
+#'    \item \code{tzone}. time zone of the dataset.
+#'  }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name activity_cage_data_example
+#' @usage data(activity_cage_data_example)
+#' @format a \code{tibble} with 2688 rows and 14 columns.
 NULL

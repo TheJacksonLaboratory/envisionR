@@ -11,7 +11,7 @@ a character vector with 5 lines, the first line is a header.
 data(activity_animal_csv_example)
 }
 \description{
-A dataset containing four lines of fabricated JAX Envision® activity data.
+A dataset containing four lines of dummy JAX Envision® activity data.
 These lines follow the format of a JAX Envision® animal-level activity CSV.
 When read properly, the lines for cage-level data have raw column titles as follows:
 }

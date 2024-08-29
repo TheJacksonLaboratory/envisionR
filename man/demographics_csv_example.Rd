@@ -11,7 +11,7 @@ a character vector with 5 lines, the first line is a header.
 data(demographics_csv_example)
 }
 \description{
-A dataset containing four lines of fabricated JAX Envision® demographics data.
+A dataset containing four lines of dummy JAX Envision® demographics data.
 These lines follow the format of a JAX Envision® demographics CSV.
 When read properly, the lines for demographics data have raw column titles as follows:
 }
