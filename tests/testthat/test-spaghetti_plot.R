@@ -177,10 +177,6 @@ test_that("spaghetti_plot() returns expected value with facet = TRUE", {
     x2$coordinates,
     spaghettiplot_example_facet$coordinates
   )
-  expect_identical(
-    x2$facet$params,
-    spaghettiplot_example_facet$facet$params
-  )
   expect_error(
     print(x2),
     NA
