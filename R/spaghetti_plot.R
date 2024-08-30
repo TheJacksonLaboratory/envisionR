@@ -1,9 +1,64 @@
+#' A \code{ggplot2} template for a spaghetti plot with light-dark times
+#'
+#' This function returns a \code{ggplot2} object that is a spaghetti plot with
+#'  light-dark times grayed out.
+#' @param activity_data activity data frame.
+#' @param metadata a metadata object as made by \code{envision_metadata()}.
+#' @param lights_on a lights-on time (formatted as \code{"HH:MM"}).
+#' @param lights_off a lights-off time (formatted as \code{"HH:MM"}).
+#' @param visualize_on the variable to visualize on for colors,
+#'  a \code{character} of length 1 (defaults to \code{group_name}).
+#'  NOTE: as of 2024-08-30, the ability to visualize on grouping variables
+#'  other than \code{group_name} has not been implemented.
+#' @param xvar the variable for the x-axis,
+#'  a \code{character} of length 1 (defaults to \code{start})
+#' @param yvar the variable for the y-axis,
+#'  a \code{character} of length 1.
+#' @param colors the colors for the plot.
+#' @param lightdark should the plot return light-dark cycle indicators on the
+#'  plot background? (default: \code{TRUE})
+#' @param darkphase_col the color for the dark phase background (default:
+#'  \code{"#CCCCCC"})
+#' @param darkphase_alpha the transparency alpha for the dark phase background.
+#'  Transparency allows grid lines to be visible in the background. (default:
+#'  \code{0.5})
+#' @param facet should the plot facet on the grouping variables? (default:
+#'  \code{TRUE})
+#' @param occupancy_norm should the plot include data normalized for cage
+#'  occupancy? (default: \code{TRUE})
+#' @param x_axis_label user-specified x-axis label.
+#' @param y_axis_label user-specified y-axis label.
+#' @param xlims user-specified x-axis limits.
+#' @param ylims user-specified y-axis limits.
+#' @param quietly should the function suppress warnings? (default: \code{FALSE})
+#' @returns a \code{ggplot2} based spaghetti plot.
+#' @keywords Envision
 #' @export
+#' @examples
+#' # Making dummy metadata
+#' metadata <- envision_metadata(
+#'   study_name = "A",
+#'   tzone = "US/Pacific",
+#'   lights_on = "06:00:00",
+#'   lights_off = "18:00:00",
+#'   study_url = "https://envision.jax.org/org/1001/study/1002/overview"
+#' )
+#'
+#' # Getting dummy dataset
+#' data("activity_cage_data_example")
+#'
+#' # Plotting dummy data
+#' spaghetti_plot(
+#'   activity_data = activity_cage_data_example,
+#'   metadata = metadata,
+#'   yvar = "movement_mean_per_cage_cm_s_hour",
+#'   facet = TRUE
+#' )
 spaghetti_plot <- function(activity_data,
                            metadata = NULL,
                            lights_on = NULL,
                            lights_off = NULL,
-                           visualize_on = "group",
+                           visualize_on = "group_name",
                            xvar = "start",
                            yvar = NULL,
                            colors = NULL,
@@ -24,7 +79,8 @@ spaghetti_plot <- function(activity_data,
   stopifnot(requireNamespace("scales"))
 
   # binding global variables
-  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <- NULL
+  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <-
+    group_name <- tzone <- timevar <- ymin <- ymax <- NULL
 
   stopifnot("data is not a tibble" = tibble::is_tibble(activity_data))
   stopifnot(
@@ -47,7 +103,7 @@ spaghetti_plot <- function(activity_data,
 
   if (occupancy_norm) {
     if (is_normalized) {
-      activity_data[, "var"] <- activity_data[, var]
+      activity_data[, "var_col"] <- activity_data[, yvar]
       if (!quietly) {
         warning("dataset already occupancy normalized")
       }
@@ -69,12 +125,12 @@ spaghetti_plot <- function(activity_data,
     activity_data[, "timevar"] <- activity_data[, xvar]
   }
 
-  if (visualize_on == "group") {
+  if (visualize_on == "group_name") {
     activity_data <- activity_data |>
       dplyr::group_by(cage_name) |>
       dplyr::mutate(visualize = group_name)
     legendtitle <- "Group"
-  }
+  } # Need to implement alternative visualise_on options here.
 
   if (is.null(colors)) {
     plotcolors <- scales::hue_pal()(length(unique(dplyr::pull(activity_data, "visualize"))))
@@ -89,8 +145,12 @@ spaghetti_plot <- function(activity_data,
     }
   }
 
-  if (!is.null(metadata) & metadata[["study_name"]] != "") {
-    plot_title <- paste0(metadata[["study_name"]])
+  if (!is.null(metadata)) {
+    if (metadata[["study_name"]] != "") {
+      plot_title <- paste0(metadata[["study_name"]])
+    } else {
+      plot_title <- NULL
+    }
   } else {
     plot_title <- NULL
   }
@@ -129,7 +189,7 @@ spaghetti_plot <- function(activity_data,
           end_date = date_range[2],
           tzone = tzone_md
         ) |>
-          mutate(ymin = -Inf, ymax = Inf)
+          dplyr::mutate(ymin = -Inf, ymax = Inf)
       }
     }
   }
