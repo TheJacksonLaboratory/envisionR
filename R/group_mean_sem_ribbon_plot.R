@@ -26,7 +26,9 @@ group_mean_sem_ribbon_plot <- function(activity_data,
   stopifnot(requireNamespace("scales"))
 
   # binding global variables
-  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <- NULL
+  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <-
+    group_name <- tzone <- mean_activity <- ll_activity <- ul_activity <-
+    ymin <- ymax <- NULL
 
   stopifnot("data is not a tibble" = tibble::is_tibble(activity_data))
   stopifnot(
@@ -88,7 +90,7 @@ group_mean_sem_ribbon_plot <- function(activity_data,
           end_date = date_range[2],
           tzone = tzone_md
         ) |>
-          mutate(ymin = -Inf, ymax = Inf)
+          dplyr::mutate(ymin = -Inf, ymax = Inf)
       }
     } else {
       if (is.null(lights_on) | is.null(lights_off)) {
@@ -103,7 +105,7 @@ group_mean_sem_ribbon_plot <- function(activity_data,
           end_date = date_range[2],
           tzone = tzone_md
         ) |>
-          mutate(ymin = -Inf, ymax = Inf)
+          dplyr::mutate(ymin = -Inf, ymax = Inf)
       }
     }
   }
@@ -122,7 +124,7 @@ group_mean_sem_ribbon_plot <- function(activity_data,
     xrange <- xminmax[2] - xminmax[1]
     xminmax_plot <- xminmax
   } else {
-    stopifnot(is.POSIXct(xlims))
+    stopifnot(inherits(xlims, "POSIXct"))
     stopifnot(length(xlims) == 2)
     stopifnot(xlims[1] < xlims[2])
     xminmax_plot <- xlims
@@ -155,7 +157,7 @@ group_mean_sem_ribbon_plot <- function(activity_data,
   summaryplot <- ggplot2::ggplot() +
     ggplot2::geom_rect(
       data = lightdark_df,
-      aes(
+      ggplot2::aes(
         xmin = lights_off,
         xmax = lights_on,
         ymin = ymin,
