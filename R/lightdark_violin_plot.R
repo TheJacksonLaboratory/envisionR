@@ -1,8 +1,45 @@
+#' A \code{ggplot2} template for a faceted violin plot with activity in light and dark
+#'
+#' This function returns a template \code{ggplot2} object that is a violin plot with
+#'  activity in the light and dark.
+#' @param activity_data activity data frame.
+#' @param metadata a metadata object as made by \code{envision_metadata()}.
+#' @param visualize_on the variable to visualize on for colors,
+#'  a \code{character} of length 1 (defaults to \code{group_name}).
+#'  NOTE: as of 2024-08-30, the ability to visualize on grouping variables
+#'  other than \code{group_name} or \code{minoccupancy} has not been implemented.
+#' @param yvar the variable for the y-axis,
+#'  a \code{character} of length 1.
+#' @param colors user-defined colors for the plot.
+#' @param y_axis_label user-specified y-axis label.
+#' @param quietly should the function suppress warnings? (default: \code{FALSE})
+#' @returns a \code{ggplot2} based violin plot with inset box-and-whiskers.
+#' @keywords Envision
+#' @examples
+#' # Making dummy metadata
+#' metadata <- envision_metadata(
+#'   study_name = "A",
+#'   tzone = "US/Pacific",
+#'   lights_on = "06:00:00",
+#'   lights_off = "18:00:00",
+#'   study_url = "https://envision.jax.org/org/1001/study/1002/overview"
+#' )
+#'
+#' # Getting dummy dataset
+#' data("activity_cage_data_example")
+#'
+#' # Plotting dummy data
+#' lightdark_violin_plot(
+#'   activity_data = activity_cage_data_example,
+#'   metadata = metadata,
+#'   visualize_on = "group_name",
+#'   yvar = "movement_mean_per_cage_cm_s_hour"
+#' )
 #' @export
 lightdark_violin_plot <- function(activity_data,
-                                  metadata,
-                                  visualize_on = NULL,
-                                  yvar = NULL,
+                                  metadata = NULL,
+                                  visualize_on,
+                                  yvar,
                                   colors = NULL,
                                   y_axis_label = NULL,
                                   quietly = FALSE) {
@@ -12,8 +49,8 @@ lightdark_violin_plot <- function(activity_data,
   stopifnot(requireNamespace("scales"))
 
   # binding global variables
-  cage_name <- animals_cage_quantity <- visualize <- group <- var_col <- NULL
-
+  cage_name <- group_name <- animals_cage_quantity <- visualize <-
+    var_col <- NULL
 
   stopifnot("data is not a tibble" = tibble::is_tibble(activity_data))
   stopifnot(
@@ -21,8 +58,8 @@ lightdark_violin_plot <- function(activity_data,
       yvar %in% colnames(activity_data)
   )
   stopifnot(
-    "visualze_on must be either minoccupancy or group" =
-      visualize_on %in% c("minoccupancy", "group")
+    "visualze_on must be either minoccupancy or group_name" =
+      visualize_on %in% c("minoccupancy", "group_name")
   )
 
   if (visualize_on == "minoccupancy") {
@@ -40,7 +77,7 @@ lightdark_violin_plot <- function(activity_data,
         ))
       )
     legendtitle <- "Min Cage Occupancy"
-  } else if (visualize_on == "group") {
+  } else if (visualize_on == "group_name") {
     activity_data <- activity_data |>
       dplyr::group_by(cage_name) |>
       dplyr::mutate(visualize = group_name)
@@ -55,12 +92,18 @@ lightdark_violin_plot <- function(activity_data,
       stop("insufficient number of colors provided")
     } else if (length(colors) > length(unique(dplyr::pull(activity_data, "visualize"))) & !quietly) {
       warning("more colors provided than number of grouping variables")
+      plotcolors <- colors[seq_len(length(unique(dplyr::pull(activity_data, "visualize"))))]
     } else {
       plotcolors <- colors
     }
   }
-  if (!is.null(metadata) & metadata[["study_name"]] != "") {
-    plot_title <- paste0(metadata[["study_name"]])
+
+  if (!is.null(metadata)) {
+    if (metadata[["study_name"]] != "") {
+      plot_title <- paste0(metadata[["study_name"]])
+    } else {
+      plot_title <- NULL
+    }
   } else {
     plot_title <- NULL
   }
