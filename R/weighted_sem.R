@@ -22,7 +22,6 @@
 #' wts_na <- c(wts, 1)
 #' weighted_sem(x_na, wts_na, na.rm = TRUE)
 #'
-#' @export
 weighted_sem <- function(x, w, na.rm = FALSE) {
   # checking the data
   stopifnot(is.numeric(x))

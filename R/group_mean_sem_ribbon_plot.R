@@ -60,12 +60,15 @@ group_mean_sem_ribbon_plot <- function(activity_data,
       stop("insufficient number of colors provided")
     } else if (length(colors) > length(unique(dplyr::pull(activity_data, "visualize"))) & !quietly) {
       warning("more colors provided than number of grouping variables")
+      plotcolors <- colors[seq_len(length(unique(dplyr::pull(activity_data, "visualize"))))]
     } else {
       plotcolors <- colors
     }
   }
 
-  if (!is.null(metadata) & metadata[["study_name"]] != "") {
+  if (is.null(metadata)) {
+    plot_title <- NULL
+  } else if (metadata[["study_name"]] != "") {
     plot_title <- paste0(metadata[["study_name"]])
   } else {
     plot_title <- NULL
