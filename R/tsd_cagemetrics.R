@@ -16,7 +16,7 @@ tsd_cagemetrics <- function(activity_data,
   }
 
   unique_cages <- activity_data |>
-    pull(cage_name) |>
+    dplyr::pull(cage_name) |>
     unique()
   warn_internal_na <- FALSE
 
@@ -67,7 +67,7 @@ tsd_cagemetrics <- function(activity_data,
       dplyr::mutate(impute = ifelse(internal_na, mean(raw, na.rm = TRUE), raw)) |>
       dplyr::ungroup() |>
       dplyr::select(-hour, -leading_trailing_na, -internal_na)
-    ts_i <- ts(pull(cage_df_i, impute),
+    ts_i <- ts(dplyr::pull(cage_df_i, impute),
       frequency = 86400 / time_i
     )
     decomp_i <- decompose(ts_i, type = "additive")

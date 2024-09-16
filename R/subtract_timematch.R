@@ -3,7 +3,9 @@ subtract_timematch <- function(activity_data,
                                var = "movement_mean_per_cage_cm_s_hour",
                                occupancy_normalize = TRUE,
                                quietly = FALSE) {
-  df_i <- unique_cages <- NULL
+  df_i <- unique_cages <- cage_name <- aggregation_seconds <- group_name <-
+    subtract_var <- animals_cage_quantity <- occupancy_norm <- hour <-
+    internal_na <- impute <- NULL
   stopifnot(requireNamespace("dplyr"))
   stopifnot(requireNamespace("tibble"))
   activity_data <- as.data.frame(activity_data)
@@ -17,7 +19,7 @@ subtract_timematch <- function(activity_data,
   }
 
   unique_cages <- activity_data |>
-    pull(cage_name) |>
+    dplyr::pull(cage_name) |>
     unique()
   warn_internal_na <- FALSE
 
