@@ -1,16 +1,18 @@
 # envisionR
 
-`envisionR` is an R package designed to facilitate the analysis of experimental data from the JAX Envision system. This package provides tools for data wrangling, quality control, visualization, and statistical analysis of high-throughput phenotyping data collected using the JAX/Allentown caging platform.
+`envisionR` is an R package designed to facilitate the analysis of experimental data exported from the JAX Envision™ software. This package provides tools for data wrangling, quality control, visualization, and statistical analysis of high-throughput phenomics data.
 
 ## Installation
 
+<!-- This commented set of lines will change when envisionR is available on CRAN or Bioconductor.
 You can install the `envisionR` package from CRAN using:
 
 ```R
 install.packages("envisionR")
 ```
+-->
 
-Or install the development version from GitHub:
+You can install the development version from GitHub:
 
 ```R
 # install.packages("devtools")
