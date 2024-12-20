@@ -78,6 +78,8 @@ DunnettTest(x = activity_1min_summarize %>% dplyr::pull(baseline_subtract_postdo
 
 ## Vignettes
 
+<!--NOTE: as of 2024-12-20, vignettes are still under development.-->
+
 Detailed walkthroughs and examples are available in the package vignettes. To view the vignettes, use:
 
 ```R
