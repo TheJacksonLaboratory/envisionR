@@ -14,7 +14,7 @@ Or install the development version from GitHub:
 
 ```R
 # install.packages("devtools")
-devtools::install_github("your-username/envisionR")
+devtools::install_github("TheJacksonLaboratory/envisionR")
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ Create URLs to visualize specific moments of video flagged in an analysis:
 
 ```R
 safety_vidstart <- as.POSIXct("2023-06-12 09:00:00", tz = "US/Central")
-make_envision_url(org = 4, study = 84, cage = 442, vidstart = safety_vidstart)
+envisionR::make_envision_url(org = 4, study = 84, cage = 442, vidstart = safety_vidstart)
 ```
 
 ### Data Wrangling and Quality Control
