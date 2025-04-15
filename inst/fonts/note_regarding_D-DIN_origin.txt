@@ -1,0 +1,3 @@
+D-DIN was downloaded on 2025-04-15 from the GitHub repository below:
+
+https://github.com/amcchord/datto-d-din

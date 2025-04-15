@@ -15,7 +15,9 @@ Depends:
 LazyData: true
 Suggests: 
     testthat (>= 3.0.0),
-    hms
+    hms,
+    showtext, 
+    sysfonts
 Config/testthat/edition: 3
 Imports: 
     dplyr,
@@ -26,3 +28,4 @@ Imports:
     scales,
     stats,
     utils
+    
