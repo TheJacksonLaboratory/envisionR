@@ -6,7 +6,7 @@
 \usage{
 theme_jax_pub(
   base_size = 11,
-  base_family = "D-DIN",
+  base_family = "D-DIN Expanded",
   base_line_size = base_size/22,
   base_rect_size = base_size/22
 )
