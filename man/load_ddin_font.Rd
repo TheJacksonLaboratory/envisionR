@@ -16,6 +16,7 @@ No return value.
 This function loads an open source version of DIN 1451. This font was
 originally prepared for the company Datto and licensed under the OFL v1.1.
 The \href{https://github.com/amcchord/datto-d-din}{D-DIN font} is available to
-download and redistribute freely. This function does not return any value.
+download and redistribute freely. DIN is the official sans-serif font of
+The Jackson Laboratory (JAX). This function does not return any value.
 }
 \keyword{Envision}
