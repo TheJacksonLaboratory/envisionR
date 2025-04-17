@@ -198,7 +198,7 @@ test_that("spaghetti_plot() returns expected value with facet = FALSE", {
     facet = FALSE
   )
   expect_true(
-    ggplot2::is.ggplot(x)
+    ggplot2::is_ggplot(x)
   )
   expect_identical(
     x$labels,
@@ -225,7 +225,7 @@ test_that("spaghetti_plot() returns expected value with facet = TRUE", {
     facet = TRUE
   )
   expect_true(
-    ggplot2::is.ggplot(x2)
+    ggplot2::is_ggplot(x2)
   )
   expect_identical(
     x2$labels,
@@ -253,7 +253,7 @@ test_that("spaghetti_plot() returns expected value with constrained xlims", {
     facet = FALSE
   )
   expect_true(
-    ggplot2::is.ggplot(x3)
+    ggplot2::is_ggplot(x3)
   )
   expect_identical(
     x3$labels,
@@ -281,7 +281,7 @@ test_that("spaghetti_plot() returns expected value with metadata are not provide
     facet = TRUE
   )
   expect_true(
-    ggplot2::is.ggplot(x325)
+    ggplot2::is_ggplot(x325)
   )
   expect_true(
     is.null(x325$labels$title)
@@ -353,7 +353,7 @@ test_that("Occupancy normalization works as expected with column occupancy_norm 
     "dataset already occupancy normalized"
   )
   expect_true(
-    ggplot2::is.ggplot(x6)
+    ggplot2::is_ggplot(x6)
   )
   expect_identical(
     x6$labels,
@@ -381,7 +381,7 @@ test_that("Plotting works as expected with no occupancy normalization", {
     occupancy_norm = FALSE
   )
   expect_true(
-    ggplot2::is.ggplot(x7)
+    ggplot2::is_ggplot(x7)
   )
   expect_identical(
     x7$labels,
@@ -416,7 +416,7 @@ test_that("User-defined x variable works as expected.", {
     facet = FALSE
   )
   expect_true(
-    ggplot2::is.ggplot(x8)
+    ggplot2::is_ggplot(x8)
   )
   expect_no_error(
     print(x8)

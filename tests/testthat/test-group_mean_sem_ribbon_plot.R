@@ -21,7 +21,7 @@ test_that("group_mean_sem_ribbon_plot() returns expected value with facet = FALS
     facet = FALSE
   ))
   expect_true(
-    ggplot2::is.ggplot(y1)
+    ggplot2::is_ggplot(y1)
   )
   expect_no_error(
     print(y1)
@@ -36,7 +36,7 @@ test_that("group_mean_sem_ribbon_plot() returns expected value with facet = TRUE
     facet = TRUE
   ))
   expect_true(
-    ggplot2::is.ggplot(y2)
+    ggplot2::is_ggplot(y2)
   )
   expect_no_error(
     print(y2)
@@ -54,7 +54,7 @@ test_that("group_mean_sem_ribbon_plot() works with an alternative timevar", {
     facet = TRUE
   ))
   expect_true(
-    ggplot2::is.ggplot(y3)
+    ggplot2::is_ggplot(y3)
   )
   expect_no_error(
     print(y3)
@@ -82,7 +82,7 @@ test_that("group_mean_sem_ribbon_plot() throws warning for too many colors", {
     "more colors provided than number of grouping variables"
   )
   expect_true(
-    ggplot2::is.ggplot(y5)
+    ggplot2::is_ggplot(y5)
   )
   expect_no_error(
     print(y5)
@@ -99,7 +99,7 @@ test_that("group_mean_sem_ribbon_plot() works warning for too many colors", {
     )
   )
   expect_true(
-    ggplot2::is.ggplot(y6)
+    ggplot2::is_ggplot(y6)
   )
   expect_no_error(
     print(y6)
@@ -121,7 +121,7 @@ test_that("group_mean_sem_ribbon_plot() works with no plot title", {
     facet = FALSE
   ))
   expect_true(
-    ggplot2::is.ggplot(y7)
+    ggplot2::is_ggplot(y7)
   )
   expect_true(
     is.null(y7$labels$title)
@@ -149,7 +149,7 @@ test_that("group_mean_sem_ribbon_plot() works with lights-on and lights-off give
     facet = FALSE
   ))
   expect_true(
-    ggplot2::is.ggplot(y8)
+    ggplot2::is_ggplot(y8)
   )
   expect_no_error(
     print(y8)
@@ -168,7 +168,7 @@ test_that("group_mean_sem_ribbon_plot() works with xlims alterred", {
     xlim = y9_xlim
   ))
   expect_true(
-    ggplot2::is.ggplot(y9)
+    ggplot2::is_ggplot(y9)
   )
   expect_identical(
     y9$coordinates$limits$x,
@@ -193,7 +193,7 @@ test_that("group_mean_sem_ribbon_plot() works with xlims and ylims alterred", {
     ylim = y10_ylim
   ))
   expect_true(
-    ggplot2::is.ggplot(y10)
+    ggplot2::is_ggplot(y10)
   )
   expect_identical(
     y10$coordinates$limits$x,
@@ -218,7 +218,7 @@ test_that("group_mean_sem_ribbon_plot() returns expected values with x and y axi
     x_axis_label = "x label"
   ))
   expect_true(
-    ggplot2::is.ggplot(y11)
+    ggplot2::is_ggplot(y11)
   )
   expect_equal(
     y11$labels$x,
