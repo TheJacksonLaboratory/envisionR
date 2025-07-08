@@ -32,8 +32,8 @@ library(envisionR)
 Create URLs to visualize specific moments of video flagged in an analysis:
 
 ```R
-safety_vidstart <- as.POSIXct("2023-06-12 09:00:00", tz = "US/Central")
-envisionR::make_envision_url(org = 4, study = 84, cage = 442, vidstart = safety_vidstart)
+safety_vidstart <- as.POSIXct("2024-06-15 09:00:00", tz = "US/Central")
+envisionR::make_envision_url(org = 9, study = 237, cage = 1819, vidstart = safety_vidstart)
 ```
 
 ### Data Wrangling and Quality Control
@@ -49,7 +49,7 @@ library(here)
 library(envisionR)
 
 # Importing annotation data
-metadata <- envisionR::envision_metadata(study_name = "Two Drug Study", tzone = "US/Central", lights_on = "06:00:00", lights_off = "18:00:00", study_url = "https://app.murine.net/org/4/study/84/")
+metadata <- envisionR::envision_metadata(study_name = "Two Drug Study", tzone = "US/Central", lights_on = "06:00:00", lights_off = "18:00:00", study_url = "https://app.murine.net/org/9/study/237/")
 annotation <- envisionR::read_annotation_csv("../data/annotation.csv", metadata = metadata)
 ```
 
