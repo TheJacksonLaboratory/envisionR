@@ -92,7 +92,7 @@ We welcome contributions to the `envisionR` package. Please fork the repository 
 
 ## License
 
-This package is licensed under the MIT License.
+This package is licensed by The Jackson Laboratory under the [GNU General Public License v3.0](http://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ## Acknowledgements
 
