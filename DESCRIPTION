@@ -6,7 +6,7 @@ Authors@R:
            comment = c(ORCID = "0000-0002-4916-8619"))
 Description: A package for importing, wrangling, analyzing, and visualizing 
   data generated using the JAX Envision® platform.
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
@@ -28,4 +28,3 @@ Imports:
     scales,
     stats,
     utils
-    
