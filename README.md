@@ -32,8 +32,8 @@ library(envisionR)
 Create URLs to visualize specific moments of video flagged in an analysis:
 
 ```R
-safety_vidstart <- as.POSIXct("2023-06-12 09:00:00", tz = "US/Central")
-envisionR::make_envision_url(org = 4, study = 84, cage = 442, vidstart = safety_vidstart)
+safety_vidstart <- as.POSIXct("2024-06-15 09:00:00", tz = "US/Central")
+envisionR::make_envision_url(org = 9, study = 237, cage = 1819, vidstart = safety_vidstart)
 ```
 
 ### Data Wrangling and Quality Control
@@ -49,7 +49,7 @@ library(here)
 library(envisionR)
 
 # Importing annotation data
-metadata <- envisionR::envision_metadata(study_name = "Two Drug Study", tzone = "US/Central", lights_on = "06:00:00", lights_off = "18:00:00", study_url = "https://app.murine.net/org/4/study/84/")
+metadata <- envisionR::envision_metadata(study_name = "Two Drug Study", tzone = "US/Central", lights_on = "06:00:00", lights_off = "18:00:00", study_url = "https://app.murine.net/org/9/study/237/")
 annotation <- envisionR::read_annotation_csv("../data/annotation.csv", metadata = metadata)
 ```
 
@@ -92,7 +92,22 @@ We welcome contributions to the `envisionR` package. Please fork the repository 
 
 ## License
 
-This package is licensed under the MIT License.
+This package is licensed by The Jackson Laboratory under the [GNU General Public License v3.0](http://www.gnu.org/licenses/gpl-3.0.en.html).
+
+Copyright (C) 2025, The Jackson Laboratory.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Acknowledgements
 
