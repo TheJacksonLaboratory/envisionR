@@ -1,0 +1,1118 @@
+---
+title: "Analysis of JAX Envision™ Data using `envisionR`"
+author: "Michael C. Saul, michael.saul [at] jax.org"
+format: 
+  html:
+    embed-resources: true
+    toc: true
+    toc-depth: 3
+    theme: cerulean
+    code-tools: true
+    code-fold: false
+    df-print: paged
+editor: source
+---
+
+## Introduction
+
+### The JAX Envision™ System
+
+JAX Envision™ is JAX's cloud-based software for digital *in vivo* studies. This system is useful for high-throughput phenotyping of various behavioral and physiological measures. It pairs with the Allentown Discovery™ IVC system for 24/7 real-time home cage monitoring of mice.
+
+### Purpose of this Vignette
+
+The purpose of this vignette is to introduce methods for the analysis of experimental data from the JAX Envision system using the [R Project for Statistical Computing](https://www.r-project.org/). R is a programming language frequently used by biologists and data scientists for statistical analysis and visualization of biological data.
+
+Some familiarity with R would be helpful to understand these examples more fully. If you need additional help in learning and using R, see the [Appendix on Learning Statistics and Using R](#appendix-learning-statistics-and-using-r) for some resources.
+
+### How to Use this Vignette
+
+The code blocks in this vignette are designed to generalize to multiple applications. It is hoped that with little modification, the code in this vignette may be adapted by others for their own work.
+
+### Outline of this Vignette
+
+This vignette includes the following sections:
+
+* [Generating JAX Envision URLs](#generating-jax-envision-urls): How to create URLs that allow a user to watch specific moments of video flagged in an analysis.
+* [Data Wrangling and Quality Control](#data-wrangling-and-quality-control): How to import data into R and perform some basic quality control checks.
+* [Initial Data Visualization and Analysis](#initial-data-visualization-and-analysis): How to make some initial plots that assist in interpreting a dataset.
+* [Understanding Circadianism and Extracting Trend and Cycle](#understanding-circadianism-and-extracting-trend-and-cycle): 
+* [Working with High Temporal Resolution Data](#working-with-high-temporal-resolution-data): How to work with data at temporal resolutions less than 1 hour (10 minute, 1 minute, or user-defined).
+* [Summarization and Statistical Inference](#summarization-and-statistical-inference): How to summarize data for statistical tests.
+
+Additionally, there are multiple appendices:
+
+* [Appendix: Tips and Tricks with Time](#appendix-tips-and-tricks-with-time)
+* [Appendix: Learning Statistics and Using R](#appendix-learning-statistics-and-using-r)
+* [Appendix: Information about this Vignette](#appendix-information-about-this-vignette)
+
+### Introducing the Dataset
+
+The dataset utilized here was collected on a pre-release version of the Allentown rack system in the JAX Envision suite. It tracks 8 cages of mice treated with either caffeine at 16 mg/kg or vehicle.
+
+This vignette primarily analyzes activity-related digital measures. Activity is typically computed as a velocity of mice in cm/s and is useful for a wide variety of disciplines. Other digital measures will be available in the future. It is anticipated that this vignette will generalize to any measure, but discretion should be used prior to making this assumption.
+
+### Notes on R Coding Conventions
+
+We will use `tidyverse`, `janitor`, and `here`, all available from CRAN and installable using `install.packages()`, for data import. Note that we will make frequent use of tidy data and the pipe operator `|>` in R. Pipes and tidy data manipulation facilitate rapid transformation ana analysis of data frame type objects in R.
+
+Additionally, all assignment operators for global variables used here are `<-` and all functions from packages outside of base R utilize the `{package}::{function}()` format to ensure that you knows which R package contains each function used in this vignette. This includes functions from `envisionR`.
+
+### Notes on Replicability and Reproducibility
+
+This vignette contains only the code needed to analyze JAX Envision™ data. It is likely that replicability and reproducibility will require additional best practices. This may include:
+
+* Making [literate coding](https://en.wikipedia.org/wiki/Literate_programming) analysis notebooks with [R Markdown](https://rmarkdown.rstudio.com/), [Quarto](https://quarto.org/), or [Jupyter](https://jupyter.org/).
+* Containerizing compute environments using [Docker](https://hub.docker.com/), [Singularity](https://docs.sylabs.io/guides/latest/user-guide/), or [KubeFlow](https://www.kubeflow.org/).
+* Version control with [git](https://git-scm.com/) and [GitHub](https://github.com/).
+* Careful use of the `here` package and relative file paths to ensure analysis file paths are preserved when data and analysis scripts are moved.
+* Potential use of the `workflowR` package to combine many of these best practices.
+
+## Data Wrangling and Quality Control
+
+The first step in analysis is to export the data from the JAX Envision app. This can be accomplished using the Export functions from a given study, accessible at "Analyze > Export Metrics". The analyses outlined here assumes that you have downloaded cage mean metrics at 1 hour time resolution.
+
+### R Libraries for Data Import
+
+We need a few libraries for data import, wrangling, and QC:
+
+* `tidyverse` includes tools for gracefully importing, manipulating, and plotting data (includes `dplyr`, `tibble`, and `ggplot2`).
+* `janitor` has functions for cleaning datasets and can automatically rename column titles in snake case.
+* `here` lets us use relative file paths.
+
+We also bring in `envisionR`.
+
+```{r import_libraries}
+#| warning: false
+# R code
+
+# Importing libraries
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+library(here)
+library(envisionR)
+```
+
+### Generating JAX Envision URLs
+
+It is often usesful to create a URL to visualize the specific moments of video highlighted in an analysis. Such videos may allow the end user to look at exemplary or abberant moments in a study. These may be used to illustrate activities of interest. We can also use the process of making a URL to look at time and how it is encoded in R. We will use time frequently here.
+
+Envision URLs are comprised of a set of components that reference a specific organization, study, cage, and time.
+
+The time stamps used in JAX Envision refer to UNIX timestamps, but with the units in milliseconds instead of seconds. This format facilitates accessing a precise frame of data in the stream. The function defined below takes a set of parameters defining organization, study, cage, time, and video start time. It uses these to generate URLs of interest. Please note that the cage number is the URL cage number, not the cage name in the app.
+
+We can use the `as.POSIXct` function to make a time that we're interested in. In this case, we wish to look at an example of a time in the mouse safety dataset just after the initial dose of a large amount of caffeine.
+
+```{r make_url}
+# R code
+
+# Getting a time as a POSIXct object
+# NOTE: time zone must be correct to refer to the right moment
+example_vidstart <- as.POSIXct("2024-06-17 09:00:00",
+                               tz = "US/Central")
+
+# Using a function to generate an Envision URL
+make_envision_url(org = 9,
+                  study = 237,
+                  cage = 1823,
+                  vidstart = example_vidstart)
+```
+
+We can copy-paste this into our address bar and go to this moment in time. It is also possible to use this method to insert links using this URL into literate code documents such as RMarkdown or Quarto documents.
+
+### Setup for Data Import
+
+Before importing the data, a good practice is to generate a metadata object with information you will use over and over again in the analysis. For example, the study title, time zone, genotypes, and lights-on and lights-off times from the study are frequently needed throughout the analysis. By defining the metadata before even bringing in the data themselves, you may save yourself from some potential headaches in the future.
+
+The time zone of a study is typically a [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Setting this time zone identifier in the metadata allows the analyst to avoid any future ambiguities in time.
+
+The study's app URL contains some important information. Each study has its own `org` ID and `study` ID. These IDs can help us 
+
+We use a function called  a `envision_metadata()`. This does some checks of our input, some data type conversion under the hood, and acts as a convenient source for study information in downstream steps.
+
+```{r metadata}
+# R code
+
+# Getting study metadata
+metadata <- envisionR::envision_metadata(study_name = "Caffeine vs. Vehicle Study",
+                                         tzone = "US/Central", # The time zone of the study
+                                         lights_on = "06:00:00", # When lights-on happens in the study
+                                         lights_off = "18:00:00", # When lights-off happens in the study
+                study_url = "https://envision.jax.org/org/9/study/237/")
+```
+
+Another good practice is to set a random seed at the beginning of a script. This allows any analysis based upon randomization to produce precisely the same values over and over again. The date when the analyst began writing the script is often a good random seed.
+
+```{r set_random_seed}
+# R code
+
+# Setting random seed
+set.seed(20250117)
+```
+
+### Importing Study Annotation Data
+
+Study annotation data are used to make notes of important events and information for videos. The function `envisionR::read_annotation_csv()` brings these files into R as a `tibble` data type. It attempts to assume a time zone and sets all column data types. To import the study annotation data, we use "Analyze > Export Metrics > Export Annotations (CSV)" in the JAX Envision app.
+
+To use `envisionR::read_annotation_csv()`, we run the code below:
+
+```{r import_annotation}
+# R code
+
+# Getting the annotation path
+annot_path <- system.file("extdata", "annotation.csv", package = "envisionR")
+
+# Opening annotation file
+annotation <- envisionR::read_annotation_csv(annot_path,
+                                             metadata = metadata)
+```
+
+Note that `read_annotation_csv()` warns us that it is making an assumption about the time zone. Most of the time, these assumptions should work. However, you can set the time zone explicitly. For a list of valid time zones, use `envisionR::list_tzones()`.
+
+We can use the `glimpse()` function to look at this dataset as it was brought into R.
+
+```{r glimpse_annotation}
+# R code
+
+# Glimpsing annotation dataset
+dplyr::glimpse(annotation)
+```
+
+A note about the `created`, `pin_start_time`, and `pin_end_time` variables: these are date-times, which are currently in the assumed local time zone for the study. They can be coerced to a different time zone such as UTC using the command `as.POSIXct(time, tz = "newtimezone")` where `time` is your time and `"newtimezone"` is the name of your new time zone. The underlying time will remain the same, but the displayed time will be appropriate for a different time zone.
+
+#### Grabbing Annotation Information
+
+We note that in this case, all the grouping variables we are interested in using were not saved in the `group_name` field. Instead, the grouping information exists entirely in the `annotation` contents information. 
+
+As the contents of the annotation dataset is a free form field and not a controlled vocabulary, we cannot depend upon the contents to faithfully reflect our dataset without some work. Instead, we can mine these data for the grouping information using regular expression. We can look at the contents of the annotation file prior to making a dosing sheet. We know the following things about this annotation dataset:
+
+* All dose information contains the word "Dose" or "Dosing" somewhere. Capitalization might not be consistent.
+* We are not interested in replies to others, which start with the character "@".
+* All vehicle doses have the word "Vehicle" in them. Capitalization might not be consistent.
+* All caffeine doses have the word "Caffeine" in them. Capitalization might not be consistent.
+* All cage insertions have the word "insert" in them.
+* All 16 mg/kg doses have the number 16 in them.
+
+From this information, we can use a string of regular expressions to extract the dosing information. We will make a data frame to hold these grouping data.
+
+```{r extract_grouping_variables_1}
+# R code
+
+# Extracting dose data
+annotation_group <- annotation |>
+  dplyr::filter(grepl("[Dd]os[ei]", contents) & 
+                !grepl("^@", contents) &
+                grepl("insert", contents)) |>
+  dplyr::mutate(drug = ifelse(grepl("[Vv]ehicle", contents), "Vehicle", ""),
+                drug = ifelse(grepl("[Cc]affeine", contents), "Caffeine", drug),
+                dose = ifelse(drug == "Vehicle", 0, -100),
+                dose = ifelse(grepl("16", contents), 16, dose)) 
+```
+
+Next, we QC the drug information.
+
+```{r make_drug_table_1}
+# R code
+
+# Making a table with the drug and dose information
+annotation_group |>
+  dplyr::group_by(drug, dose) |>
+  dplyr::summarize(n = length(contents))
+```
+
+The grouping variables have been added. Next, we create a data frame that only includes one entry per cage.
+
+```{r make_drug_table_3}
+# R code
+
+annotation_group <- annotation_group |>
+  group_by(cage_name) |>
+  summarize(drug = unique(drug),
+            dose = unique(dose),
+            drug_dose_mgperkg = paste(str_to_title(drug), " (", dose, 
+                                      " mg/kg)", sep = ""),
+            dose1_time = pin_start_time[which(pin_start_time < ymd_hms("2024-06-18 18:00:00"))],
+            dose2_time = pin_start_time[which(pin_start_time > ymd_hms("2024-06-18 18:00:00"))])
+```
+
+Now we check our work.
+
+```{r annotation_grouping_check}
+# R code
+
+annotation_group
+```
+
+The annotation data look good and are ready for downstream work. Now that we have wrangled the data, one thing we can do to help ourselves in the future is to [serialize](https://en.wikipedia.org/wiki/Serialization) the annotation data. This saves the data to disk in a `.RDS` format, which simplifies bringing them back into R. In this case, we make a new folder in `../data/` that contains serialized data, then serialize the annotation data.
+
+```{r make_serialize}
+# R code
+
+# Making folder to hold serialized R objects
+# NOTE: this function throws a warning if the directory already exists
+outdir = tempdir()
+
+# Serializing annotation
+saveRDS(annotation, paste0(outdir, "/annotation.RDS"))
+saveRDS(annotation_group, paste0(outdir, "/annotation_group.RDS"))
+```
+
+We have finished wrangling and QCing the annotation data.
+
+### Importing Cage Demographics Data
+
+The cage demographics data may be exported from the JAX Envision app using "Manage > Overview > ... > Export Animals and Cages".
+
+```{r import_cage_data}
+# R code
+
+# Getting the demographic data path
+demo_path <- system.file("extdata", "cagedata.csv", package = "envisionR")
+
+# Importing cage data
+demodata <- envisionR::read_demographics_csv(demo_path)
+```
+
+We will now use the `glimpse()` function to see these data.
+
+```{r glimpse_cage_data}
+# R code
+
+# Glimpsing cage data
+dplyr::glimpse(demodata)
+```
+
+We can see that the `cagedata` data frame contains some important experimental information from the study. 
+
+* Group, encoded as `group_id`, is a user-defined field that can include any grouping variable of interest to the experiment.
+* Strain and genotype, encoded in `strain` and `genotype`, are frequently used fields that may be important to your specific analysis.
+* RapID eartag color, encoded as `rap_id_tag_color`, may be used to translate between animal numbers in the study and visually identifiable animals in a specific cage.
+* Sex, encoded in `sex`, is often a variable of interest for analysis.
+* Birth dates from each animal appear in the `birth_date` column. These can be used to compute animal ages for longitudinal studies. See the section on [Computing Experimental Time Encoding from the Appendix: Tips and Tricks with Time](#computing-experimental-time-encoding).
+
+The `demodata` data frame needs little QC and is ready for serialization.
+
+```{r serialize_cagedata}
+# R code
+
+# Serializing the cagedata data frame
+saveRDS(demodata, paste0(outdir, "/demodata.RDS"))
+```
+
+We have finished wrangling and QCing the cage data.
+
+### Importing Activity Data
+
+We are now ready to import the activity data aggregated to 1 hour intervals.
+
+```{r import_activity}
+# R code
+
+# Getting the activity data path
+act_path <- system.file("extdata", "activity.csv", package = "envisionR")
+
+# Importing the activity data and cleaning column names.
+activity <- envisionR::read_activity_csv(act_path,
+                                         metadata = metadata)
+```
+
+We can look at the dataset using `dplyr::glimpse()`.
+
+```{r activity_change_tz}
+# R code
+
+# Glimpsing the dataset again
+dplyr::glimpse(activity)
+```
+
+The variable from this export include the following:
+
+Variable Name                                 | Variable Description
+----------------------------------------------|-----------------------------------------------------------------------------------
+`start`                                       | The date and time at the start of the aggregation bin (in UTC).
+`start_date_local`                            | The start date (in the time zone in which the data were collected).
+`start_time_local`                            | The start time (in the time zone in which the data were collected).
+`study_code`                                  | A unique code for the study.
+`aggregation_seconds`                         | The number of seconds aggregated to generate this dataset (3600 is 1 hour)
+`group_name`                                  | A user-defined group name, often used to label experimental groups of interest.
+`cage_name`                                   | The name of the cage that the data represent.
+`animals_cage_quantity`                       | The number of animals in the cage, sometimes called cage density or occupancy.
+`light_cycle`                                 | Whether the data were collected in the light (`Light`) or dark (`Dark`) cycle.
+`movement_mean_per_cage_cm_s_hour`            | Cage-level movement in cm/s.
+`wheel_occupancy_mean_per_cage_animals_hour`  | Amount of time spent on the wheel at the cage level.
+`food_occupancy_mean_per_cage_animals_hour`   | Amount of time spent in proximity to the food hopper at the cage level.
+`water_occupancy_mean_per_cage_animals_hour`  | Amount of time spent in proximety to the water bottles at the cage level.
+
+**NOTE: at the cage level, none of these variables has not been normalized for cage occupancy.** Unnormalized data may have issues when occupancy changes. In each dataset, it is necessary to evaluate whether cage occupancy might play an effect.
+
+We now run a summary of the dataset.
+
+```{r summarize_activity}
+# R code
+
+# Summarizing activity
+summary(activity)
+```
+
+To ensure a tidy dataset, we can add the group names into this data frame by using the `annotation_group` data frame generated above. We use `dplyr::left_join` and join on the variable `cage_name`.
+
+```{r join_activity_grouping}
+# R code
+
+# Doing a left join of activity and annotation_group
+activity <- activity |>
+  dplyr::left_join(annotation_group, by = "cage_name")
+```
+
+#### Changing Velocity Units
+
+We will be working with the variable `movement_mean_per_cage_cm_s_hour`, which expresses the activity for that particular hour in the average velocity of mice inside the cage as cm/s. However, what if we wish to do a units conversion?
+
+We can change the units relatively simply with the function `velicity_units_convert()`. For example, if we wish to know meters per hour (m/h), we can make a new calculated column with this information.
+
+```{r convert_to_m_h}
+# R code
+
+activity_mperh <- activity |>
+  dplyr::mutate(movement_mean_per_cage_m_h_hour = velocity_unit_convert(movement_mean_per_cage_cm_s_hour,
+                                                                        units_in = "cm/s",
+                                                                        units_out = "m/h"))
+
+dplyr::glimpse(activity_mperh)
+```
+
+The new column `movement_mean_per_cage_m_h_hour` has the average amount of meters the animal traveled per hour during that time period. Note that for the hourly digests, the unit of time cancels out:
+
+$\displaystyle{{meters \over{hour / hour}} = {meters \over{1}} = meters}$.
+
+The number we get by converting to m/h is the distance that the animals in that cage travelled in the space of an hour.
+
+### Normalization by Cage Occupancy
+
+It should be noted that cage occupancy is a user-defined feature of each dataset. **It is recommended that cage occupancy is quality checked in the app for each dataset.** The simplest way to evaluate whether occupancy is an issue is to look at the final cage-day of data from a dataset and see if the number of animals matches what is annotated in the app. If the number is less than what is annotated, the analyst may need to reannotate cage occupancy.
+
+Here, we evaluate whether the cages have a consistent annotated occupancy.
+
+```{r eval_activity_occupancy}
+# R code
+
+# Making a table of cage occupancy
+table(activity$animals_cage_quantity, activity$cage_name)
+```
+
+After checking the data at the end of the study, we see that three cages have occupancies of less than 3: `C8`, `C12`, and `C17`. 
+
+We now visualize whether there are apparent differences in activity (the variable called `movement_mean_per_cage_cm_s_hour`) that might be influenced by cage occupancy. This starts with a violin and box-and-whiskers plot using `ggplot2`.
+
+```{r visualize_cages_occupancy}
+# R code
+
+# Visualizing whether there are occupancy issues.
+lightdark_violin_plot(activity_data = activity,
+                      metadata = metadata,
+                      visualize_on = "minoccupancy",
+                      yvar = "movement_mean_per_cage_cm_s_hour")
+```
+
+We see that occupancy influences the distributions of activity in the dataset. The cage-level activity metrics are based upon the total distance traveled by all mice in a cage. Consequently, the occupancy issue should be resolved before further analysis. In this dataset, the following differences from an occupancy of 3 occur:
+
+* For cage `C8`, occupancy drops to 2 at approx. 08:00 CDT on 2023-06-12 and drops to 1 at approx. 07:15 CDT on 2023-06-13.
+* For cage `C12`, only 1 mouse is present throughout the course of the experiment.
+* For cage `C17`, occupancy is 2 throughout the entire experiment.
+
+Normalizing for cage occupancy may make the distributions match one another better than they currently do. Performing the normalization by dividing `movement_mean_per_cage_cm_s_hour` by `animals_cage_quantity`.
+
+```{r correcting_occupancy}
+# R code
+
+# Computing a per animal normalized metric
+activity_cagenorm <- activity|>
+  dplyr::mutate(movement_mean_per_animal_cm_s_hour = movement_mean_per_cage_cm_s_hour / animals_cage_quantity)
+```
+
+Now we are visualizing to see if this normalization had the desired effect.
+
+```{r visualize_occupancy_changes}
+# R code
+
+# Visualizing change in occupancy.
+lightdark_violin_plot(activity_data = activity_cagenorm,
+                      metadata = metadata,
+                      visualize_on = "minoccupancy",
+                      yvar = "movement_mean_per_animal_cm_s_hour")
+```
+
+The occupancy corrections resolve issues with the cages. Downstream functions can perform cage-level normalization on the fly, so we will use the raw activity dataset in these functions. The data are ready to be serialized.
+
+```{r serialize_activity_data}
+# R code
+
+# Serializing the cleaned activity data.
+saveRDS(activity, paste0(outdir, "/activity.RDS"))
+```
+
+The data have been quality checked and are ready for initial visualization.
+
+## Initial Data Visualization and Analysis
+
+Exploratory analysis of JAX Envision data frequently starts out with visualization of the dataset with respect to experimental factors of interest. This 
+
+### On Figure Colors
+
+In this experiment, we can represent different experimental conditions using different colors. A good color scheme to use is the [Okabe-Ito color scheme](https://www.nature.com/articles/nmeth.1618/figures/2), which has been optimized for effective use as a categorical color scheme that includes eight different colors distinguishable by people with color vision deficiency.
+
+```{r view_okabe_ito, echo=FALSE, warning=FALSE}
+# R code
+
+# Showing the Okabe-Ito color palette
+scales::show_col(ggokabeito::palette_okabe_ito())
+```
+
+Most plots we make will use an R package called `ggplot2`. This R package is a modular "grammar of graphics" plotting library that allows us to layer plots together as we like and to change graphical elements as we wish. Almost any plot produced in this vignette can be modified by the user as they choose.
+
+The `ggokabeito` package brings the Okabe-Ito palette into `ggplot2`. 
+
+In this experiment, we use the gray to represent vehicle and dark blue to represent 16 mg/kg of caffeine respectively. We bring in the library and set an order for the nine colors:
+
+```{r ggokabeito}
+# R code
+
+# Getting R libraries
+library(ggokabeito)
+okabe_order = c(5,8,6,1,3,4,2,7,9)
+```
+
+### Violin and Box-and-Whiskers Plots
+
+As was shown in the above section on [normalization by cage occupancy](#normalization-by-cage-occupancy), violin and box-and-whiskers plots are useful for visualizing large-scale effects on whole experiments. We can apply this method to the dataset by generating the same violin and box-and-whiskers plot as above, but with the colors changed to show the grouping variables.
+
+
+```{r visualize_grouping_boxwhiskers}
+# R code
+
+lightdark_violin_plot(activity_data = activity_cagenorm,
+                      metadata = metadata,
+                      visualize_on = "group_name",
+                      yvar = "movement_mean_per_animal_cm_s_hour") +
+  scale_color_okabe_ito(order = okabe_order)
+```
+
+We can see that at this high level, there is no apparent effect of drug on activity. We see that there is some unevenness in light period baseline activity. This is most likely due to differences in occlusion by nesting material between cages.
+
+One result of the differences in occlusion is differences between cages that manifest particularly during the light period. These differences can affect individual animal datasets and are one source of what we call the cage effect. Put simply, animals within each cage behave more similarly to each other than they do to animals in other cages.
+
+One way to resolve this and other cage-level issues without much extra work is to analyze experiments at the cage level.
+
+### Spaghetti Plots with Day/Night Rectangles
+
+We can make a type of plot called a spaghetti plot, which simply shows the various different measurements of activity over the course of experimental time. This is often a useful plot that can show us a lot of information at a glance. It is frequently one of the first plots we make in an experiment.
+
+`envisionR` has a template for a spaghetti plot that can be made from an activity dataset with a metadata object. By default, this template facets the dataset by its different levels in the `group_name` column. We note that this function can perform normalization for occupancy; in fact, it normalizes for occupancy by default. Thus, we can pass it the raw activity data and ask it to do an occupancy normalization.
+
+```{r spaghetti_plot}
+# R code
+
+spaghetti_plot(activity_data = activity, 
+               metadata = metadata,
+               yvar = "movement_mean_per_cage_cm_s_hour",
+               occupancy_norm = TRUE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order)
+```
+
+In the spaghetti plot on hour-aggregated data, we can see that some effects are visible at even the roughest and least processed level of the dataset. 
+
+We also see that there is one very noisy cage in the `Vehicle (0 mg/kg)` group. The noisy cage turns out to be cage `C12`, which is a singly housed animal. We can deal with this outlier cage in a couple of different ways. One way is to simply throw the cage out. Another way is to use statistical techniques that weight that cage lower than other cages.
+
+### Ribbon Plot: Weighted Mean and Standard Error
+
+In an ideal experiment, all cages have the same density. This is often not possible in a digital *in vivo* study for a variety of reasons. To compare cages with different amounts of animals, we often must normalize metrics affected by this effect by cage occupancy.
+
+However, this technique still gives equal weight to cages with 1 animal as it does to cages with 3 animals. As an alternative to equal weighting of cages, we can also weight each observation by the amount of mice in the cage.
+
+We can make a ribbon plot, which has the mean as a line and the standard error of the mean as a lighter colored and slightly transparent box around the line. This allows us to identify moments in time where standard error bars overlap at a glance. This can be done with weighted standard error using the `envisionR` function `group_mean_sem_ribbon_plot()`. As with the `spaghetti_plot()` function, this function includes the ability to use the metadata and the ability to normalize by cage occupancy.
+
+We can run this function with unweighted mean and standard error:
+
+```{r ribbon_plot_unweighted}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity,
+                           metadata = metadata,
+                           yvar = "movement_mean_per_cage_cm_s_hour",
+                           occupancy_norm = TRUE,
+                           occupancy_weight = FALSE) + 
+  scale_color_okabe_ito(order = okabe_order) + 
+  scale_fill_okabe_ito(order = okabe_order)
+```
+
+We can do the same with weighted mean and standard error:
+
+```{r ribbon_plot_weighted}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity,
+                           metadata = metadata,
+                           yvar = "movement_mean_per_cage_cm_s_hour",
+                           occupancy_norm = TRUE,
+                           occupancy_weight = TRUE) + 
+  scale_color_okabe_ito(order = okabe_order) + 
+  scale_fill_okabe_ito(order = okabe_order)
+```
+
+These look fairly similar, but the weighted dataset typically reflects a slightly greater degree of uncertainty. The use of weighted or unweighted metrics is something that should be carefully considered.
+
+### Zooming In on Interesting Time Points
+
+Both of these plotting functions allow us to zoom in on specific time points. For each of them, we can insert a specific time in as a `xlim` variable. For the safety study, one interesting way of visualizing the data is to zoom into the 30 hours around the first dose.
+
+```{r spaghetti_30hr}
+# R code
+
+# Getting x limits for first dose
+xlimits_firstdose <- as.POSIXct(c("2024-06-17 00:00:00", "2024-06-18 06:00:00"),
+                                tz = metadata[["tzone"]])
+
+spaghetti_plot(activity_data = activity, 
+               metadata = metadata,
+               yvar = "movement_mean_per_cage_cm_s_hour",
+               occupancy_norm = TRUE,
+               xlim = xlimits_firstdose) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order)
+```
+
+We can do the same with the weighted mean and SEM summary plot.
+
+```{r ribbon_30hr}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity,
+                           metadata = metadata,
+                           yvar = "movement_mean_per_cage_cm_s_hour",
+                           occupancy_norm = TRUE,
+                           occupancy_weight = TRUE,
+                           xlim = xlimits_firstdose) + 
+  scale_color_okabe_ito(order = okabe_order) + 
+  scale_fill_okabe_ito(order = okabe_order)
+```
+
+We can already see the differences in activity due to differences in treatment.
+
+## Understanding Circadianism and Extracting Trend and Cycle
+
+*Note: some of these analyses assume a 24 hour day. Transitions to daylight time violate this assumption. See the [subsection on Daylight Time and 24-Hour Data in Appendix: Tips and Tricks with Time](#daylight-time-and-24-hour-data).
+
+### Short Studies: Circadian-Matched Baseline Subtraction
+
+For many studies, it is appropriate to subtract a baseline day from the same hour on a test day. This method is relatively simple and can work well for short studies. `envisionR` has a function `subtract_timematch()` that implements this behavior for activity data.
+
+```{r subtract_timematch}
+# R code
+
+# Subtracting time matched data from the day before study days and visualizing the results
+activity_timematchsubtract <- subtract_timematch(activity_data = activity,
+                                                 var = "movement_mean_per_cage_cm_s_hour",
+                                                 occupancy_normalize = TRUE)
+
+dplyr::glimpse(activity_timematchsubtract)
+```
+
+We can plot the output as a spaghetti plot:
+
+```{r subtract_spaghetti}
+# R code
+
+spaghetti_plot(activity_data = activity_timematchsubtract,
+               metadata = metadata,
+               yvar = "time_matched_subtracted",
+               occupancy_norm = FALSE) +
+    scale_color_okabe_ito(order = okabe_order) 
+```
+
+We can also plot the output as a ribbon plot:
+
+```{r subtract_ribbon}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_timematchsubtract,
+                           metadata = metadata,
+                           yvar = "time_matched_subtracted",
+                           occupancy_norm = FALSE) +
+  scale_color_okabe_ito(order = okabe_order) +
+  scale_fill_okabe_ito(order = okabe_order)
+```
+
+We can zoom in for these plots in the same way as we did before:
+
+```{r subtract_ribbon_xlim}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_timematchsubtract,
+                           metadata = metadata,
+                           yvar = "time_matched_subtracted",
+                           occupancy_norm = FALSE,
+                           xlim = xlimits_firstdose) +
+  scale_color_okabe_ito(order = okabe_order) +
+  scale_fill_okabe_ito(order = okabe_order)
+```
+
+The Y axis of this plot style shows the difference in velocity relative to baseline of a specific set of hours. This is in the same units as the original activity dataset.
+
+### Long Studies: Time Series Decomposition
+
+For longer studies such as longitudinal studies that may last for weeks to months, a technique called [time series decomposition](https://en.wikipedia.org/wiki/Decomposition_of_time_series) may be helpful. This technique breaks raw data down into three components:
+
+* Trend: Moving averages of the data that encompass a complete cycle. In circadian datasets, this is 24 hours.
+* Periodic (called Circadian in these datasets): The element of a dataset that reliably varies according to the time in the period.
+* Residual: what is left over after subtracting out trend and periodic components from the raw data.
+
+While time series decompositions can be done using both additive and multiplicative processes, we concentrate on an additive time series decomposition here.
+
+The Periodic (Circadian) is very useful as it can be put together with the raw dataset to create a *detrended* component, which is the raw dataset with the periodic component subtracted out.
+
+For these data, we can perform a time series decomposition using the `tsd_cagemetrics()` function.
+
+```{r activity_tsd_cagemetrics}
+# R code
+
+activity_tsd <- tsd_cagemetrics(activity_data = activity,
+                                var = "movement_mean_per_cage_cm_s_hour",
+                                occupancy_normalize = TRUE)
+glimpse(activity_tsd)
+```
+
+We can plot the circadian components with the `spaghetti_plot()` function.
+
+```{r spaghetti_plot_circadian}
+# R code
+
+spaghetti_plot(activity_data = activity_tsd,
+               metadata = metadata,
+               yvar = "circadian",
+               occupancy_norm = FALSE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order)
+```
+
+We can also use the `group_mean_sem_ribbon_plot()` function to plot detrended data.
+
+```{r detrended_ribbon_plot}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_tsd,
+                           metadata = metadata,
+                           yvar = "detrended",
+                           occupancy_norm = FALSE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggokabeito::scale_fill_okabe_ito(order = okabe_order)
+```
+
+We can zoom into the first dose using this approach.
+
+```{r detrended_ribbon_plot_zoomed}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_tsd,
+                           metadata = metadata,
+                           yvar = "detrended",
+                           occupancy_norm = FALSE,
+                           xlim = xlimits_firstdose) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggokabeito::scale_fill_okabe_ito(order = okabe_order)
+```
+
+This allows us to 
+
+## Working with High Temporal Resolution Data
+
+Up until now, we have worked with data aggregated at the 1 hour time scale. However, there are many reasons that an analysis may wish to utilize higher resolution data. The JAX Envision app can export data at 10 minute and 1 minute resolutions. 
+
+**NOTE: resolutions down to 1 second or less are available for advanced users through the JAX Envision data science suite, where direct access to the Amazon S3 buckets allows downloading the parquet files outputted by the algorithms that compute distances travelled in each cage.**
+
+We can use the same process as above to import and plot 1 minute scale data.
+
+```{r import_1min_data}
+# R code
+
+# Getting the activity 1 minute data path
+act1m_path <- system.file("extdata", "activity_1min.csv", package = "envisionR")
+
+activity_1min <- read_activity_csv(act1m_path,
+                                   metadata = metadata)
+
+dplyr::glimpse(activity_1min)
+```
+
+Note that this file is substantially bigger (approx. 220,000 rows and about 26 MB) and takes much longer to import into R than the hour-long files we were working with above.
+
+We can plot these data using the spaghetti plot function.
+
+```{r plot_spaghetti_1min}
+# R code
+
+spaghetti_plot(activity_data = activity_1min,
+               metadata = metadata,
+               yvar = "movement_mean_per_cage_cm_s_min",
+               occupancy_norm = TRUE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order)
+```
+
+We note that the 1 minute scale data have lots of little spikes and valleys relative to the 1 hour data. As time scales become more granular, noise becomes a bigger and bigger issue. We will do a ribbon plot to see if the noise is affecting our inferences.
+
+```{r ribbon_plot_1min_raw}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_1min,
+                           metadata = metadata,
+                           yvar = "movement_mean_per_cage_cm_s_min",
+                           occupancy_norm = TRUE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggokabeito::scale_fill_okabe_ito(order = okabe_order)
+```
+
+We see that the minute-level noise has made even the summarized dataset look somewhat rough. How do we overcome this issue? One way of doing it is to smooth the data.
+
+There are a number of techniques available to smooth data, but one of the simplest is to run a moving average (sometimes also called a rolling mean) on the dataset. `envisionR` has a moving average function called `moving_average()`. We select a relatively small window of 15 minutes for the moving average so that we do not lose too much granular detail. As above, we use the `dplyr::mutate()` function to insert a new calculated column into the dataset. However, we add another couple of tricks, which are to arrange the dataset in order (think the `Sort` function in Microsoft Excel) and to group the dataset into smaller pieces so that we can run the moving average on each cage individually. We use the pipe operator, `|>`, to feed the output of each line into the next lines, which lets us chain together things we want to do with the dataset in a particular order.
+
+```{r moving_average_1min_data}
+# R code
+
+activity_1min <- activity_1min |>
+  dplyr::arrange(cage_name) |>
+  dplyr::group_by(cage_name) |>
+  dplyr::mutate(activity_ma = moving_average(movement_mean_per_cage_cm_s_min, n = 15)) |>
+  dplyr::ungroup()
+
+glimpse(activity_1min)
+```
+
+We see that the first 8 values for this moving average are `NA`. This is a consequence of running the moving average: we lose a few observations at the beginning and the end of the dataset.
+
+We can now plot the spaghetti plot for the newly smoothed dataset.
+
+```{r plot_spaghetti_1min_ma}
+# R code
+
+spaghetti_plot(activity_data = activity_1min,
+               metadata = metadata,
+               yvar = "activity_ma",
+               occupancy_norm = TRUE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order)
+```
+
+The dataset appears to be somewhat smoother and we can see some of the effects we're interested in seeing now (note the spike on June 12 for 16 mg/kg caffeine). Let's see if this helped us in the ribbon plot.
+
+```{r plot_ribbon_1min_ma}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_1min,
+                           metadata = metadata,
+                           yvar = "activity_ma",
+                           occupancy_norm = TRUE) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggokabeito::scale_fill_okabe_ito(order = okabe_order)
+```
+
+We can again zoom into the first dose.
+
+```{r plot_ribbon_1min_ma_zoomed}
+# R code
+
+group_mean_sem_ribbon_plot(activity_data = activity_1min,
+                           metadata = metadata,
+                           yvar = "activity_ma",
+                           occupancy_norm = TRUE,
+                           xlim = xlimits_firstdose) +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggokabeito::scale_fill_okabe_ito(order = okabe_order)
+```
+
+We see that the smoothed 1 minute data have given us a much fuller picture of the effects than the 1 hour aggregates.
+
+## Summarization and Statistical Inference
+
+Sometimes we wish to do a statistical test on datasets. A natural question is when this should be done. There are a couple of possibilities. One is to do tests for every time point in the dataset and attempt to glean some information that way. This can be a very difficult proposition as the more tests we run, the more false discoveries we make. We have to control for the false discovery rate, which can be problematic if the data weren't summarized adequately and are noisy. If we run tests on each minute (or even each hour) after the dose, we might have issues in identifying an effect.
+
+However, if we summarize by taking the mean for a couple of time bins after the initial dose, we may identify an effect. That is what we will do here. We will use the 1 minute scale data.
+
+### A Note on Exploratory vs. Hypotheis-Driven Data Analysis
+
+We are forming hypotheses here based upon what we saw in the plot above. This is an exploratory analysis that gives us some information about hypotheses we might wish to adjudicate more carefully in the future. The exploratory mode is a valid mode of scientific inquiry, but exploratory analyses are sometimes considered hypothesis-generating and not hypothesis-adjudicating.
+
+We made the hypothesis that the four-hour period would display a statistically significant difference by looking at the plots from above. In statistics and data science, this is sometimes called hypothesizing after the results are collected, HARKing for short. So long as we are transparent about it and careful with our interpretation, there is no problem with doing this. However, without a lot of extra effort to control false discoveries, it does not allow us to make statements with a great degree of certainty about an effect. It also means we have to be very careful with how we discuss and write up results.
+
+If we were to wish to do a hypothesis-driven experiment, we would need to write an analysis plan *before* doing an experiment. However, it is difficult to write such a plan when working with a brand new data type where we have no specific expectations. Consequently, this experiment was analyzed using exploratory methods. The results of the hypothesis tests below should probably be interpreted as evidence of *how likely it is that future studies could find similar results*.
+
+### Summarizing at 4 Hours after 1st Dose
+
+First, we bring in the dose data by using the `dplyr::left_join()` statement.
+
+```{r add_dose_to_1min}
+# R code
+
+activity_1min_joined <- activity_1min |>
+  dplyr::left_join(annotation_group, by = "cage_name")
+```
+
+Then we make a 4-hour post-dose summary with baseline subtraction. We use a series of `tidyverse` operations here.
+
+```{r summarize_4hour_timebins_after_dose1}
+# R code
+
+activity_1min_summarize <- activity_1min_joined |>
+  dplyr::filter((start >= dose1_time & start <= (dose1_time + 60 * 60 * 4)) |
+                  (start >= dose1_time - (60 * 60 * 24) & start <= dose1_time - (60 * 60 * 20))) |>
+  dplyr::group_by(group_name, cage_name, start_date_local) |>
+  dplyr::mutate(activity_occupancynorm = movement_mean_per_cage_cm_s_min / animals_cage_quantity) |>
+  dplyr::summarize(postdose_0to4hr = mean(activity_occupancynorm, na.rm = TRUE)) |>
+  dplyr::ungroup() |> 
+  dplyr::group_by(group_name, cage_name) |>
+  dplyr::arrange(start_date_local) |>
+  dplyr::summarize(baseline_subtract_postdose_0to4hr = postdose_0to4hr[2] - postdose_0to4hr[1]) |>
+  dplyr::ungroup()
+
+activity_1min_summarize
+```
+
+There were a lot of steps in that operation, but it amounts to taking the mean activity in the four hours after a dose, then subtracting the activity from the same four hour period from the day before. We now have cage-level numbers for the four hours post-dose that have been adjusted for baseline activity. These are suitable for plotting as what we call a beeswarm plot using the `ggbeeswarm` package (and labels using the `ggrepel` package):
+
+```{r beeswarm_baseline_corrected}
+# R code
+
+# Getting the ggplot add-on packages
+library("ggbeeswarm")
+library("ggrepel")
+
+ggplot2::ggplot(data = activity_1min_summarize,
+                aes(x = group_name, y = baseline_subtract_postdose_0to4hr,
+                     color = group_name, label = cage_name)) +
+  ggbeeswarm::geom_beeswarm() +
+  ggrepel::geom_label_repel() +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+                 legend.position = "none") +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylab("Baseline-Corrected Average Activity:\n4 Hours after Dose 1 (cm/s)")
+```
+
+We can see that there is no overlap, which means that the data will certainly be significant by the non-parametric Wilcoxon rank-sum test. We can also do an t-test on these data.
+
+```{r ttest}
+# R code
+
+activity_4hr_post_dose_ttest <- t.test(baseline_subtract_postdose_0to4hr ~ group_name, 
+                                     data = activity_1min_summarize)
+activity_4hr_post_dose_ttest
+```
+
+We see that for this specific comparison, 16 mg/kg caffeine significantly changes activity. We can use the same code as above, but change the dose from `dose1` to `dose2`.
+
+```{r dark_period_analysis}
+# R code
+
+activity_1min_summarize_darkdose <- activity_1min_joined |>
+  dplyr::filter((start >= dose2_time & start <= (dose2_time + 60 * 60 * 4)) |
+                  (start >= dose2_time - (60 * 60 * 24) & start <= dose2_time - (60 * 60 * 20))) |>
+  dplyr::group_by(group_name, cage_name, start_date_local) |>
+  dplyr::mutate(activity_occupancynorm = movement_mean_per_cage_cm_s_min / animals_cage_quantity) |>
+  dplyr::summarize(postdose_0to4hr = mean(activity_occupancynorm, na.rm = TRUE)) |>
+  dplyr::ungroup() |> 
+  dplyr::group_by(group_name, cage_name) |>
+  dplyr::arrange(start_date_local) |>
+  dplyr::summarize(baseline_subtract_postdose_0to4hr = postdose_0to4hr[2] - postdose_0to4hr[1]) |>
+  dplyr::ungroup()
+
+ggplot2::ggplot(data = activity_1min_summarize_darkdose,
+                aes(x = group_name, y = baseline_subtract_postdose_0to4hr,
+                     color = group_name, label = cage_name)) +
+  ggbeeswarm::geom_beeswarm() +
+  ggrepel::geom_label_repel() +
+  ggokabeito::scale_color_okabe_ito(order = okabe_order) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+                 legend.position = "none") +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylab("Baseline-Corrected Average Activity:\n4 Hours after Dose 2 (cm/s)")
+```
+
+In this case, we have a similar finding. We can again do a t-test.
+
+```{r darkdose_ttest}
+# R code
+
+activity_4hr_post_darkdose_ttest <- t.test(baseline_subtract_postdose_0to4hr ~ group_name, 
+                                           data = activity_1min_summarize_darkdose)
+activity_4hr_post_darkdose_ttest
+```
+
+We see that for the dark dose, caffeine similarly has an effect.
+
+## Appendix: Tips and Tricks with Time
+
+The ways that time is encoded in digital *in vivo* studies can impact how a study is analyzed. Here, we discuss some methods, issues, and workarounds for time.
+
+### Working with UNIX Time Codes and Integer Division
+
+R uses UNIX timecode for its internal time encoding. Under the hood, R uses something called the `POSIXct` class to represent time in an easily interpretable and computable way. `POSIXct` stands for **P**ortable **O**perating **S**ystem **I**nterface **c**alendar **t**ime. These UNIX timecodes are encoded as the number of seconds since 1970-01-01 00:00:00Z. 
+
+In R, `POSIXct` objects may be coerced to their raw UNIX time code in seconds using the `as.numeric()` function. Further, numeric seconds may be coerced back into `POSIXct` objects using the `lubridate::as_datetime()` function.
+
+```{r datetime_minute}
+# R code
+
+# Producing an arbitrary hour
+datetime_minute <- as.POSIXct("2024-06-26 06:12:00", tz = "UTC")
+
+# Showing this minute in numeric format
+as.numeric(datetime_minute)
+```
+
+A simple way to manipulate time codes for JAX Envision systems is to add or subtract a number of seconds from them. Additionally, it is often possible to use modulo division to automatically compute things like the hour interval that a specific minute is in. For example:
+
+```{r modulo_hour}
+# R code
+
+# Getting the hour in which this date and time starts
+# There are 3600 seconds in an hour
+# Subtracting the modulo of the UNIX time stamp divided by 3600
+datetime_inhour <- datetime_minute - as.numeric(datetime_minute) %% 3600
+
+# Showing the hour interval for the datetime
+datetime_inhour
+```
+
+This method can be used to quickly compute intervals over a very large vector of data.
+
+### Computing Experimental Time Encoding
+
+There are many circumstances in which it is advantageous to compute an experimental time. For example:
+
+* Longitudinal studies may be aligned by the animals' age.
+* Studies with multiple runs over time may be aligned by the first light/dark transition after animals are inserted into a cage.
+
+In each of these cases, it is necessary to compute a derived experimental time encoding. This encoding is a separate column that includes the time as seconds, hours, or days after an arbitrary event. `envisionR` has a function `reltime()` that does this.
+
+For example, to encode an animal's age, days after its date of birth works well:
+
+```{r encode_animal_age}
+# R code
+
+# Getting a vector of presumed dates of birth
+dob = as.POSIXct(c("2024-01-20","2024-01-22"))
+
+# Getting a vector of a date
+today = as.POSIXct(c("2024-06-24","2024-06-24"))
+
+# Computing days postnatal
+days_postnatal = reltime(rawtimes = today, 
+                         reftimes = dob,
+                         units = "days")
+
+# Displaying days postnatal
+days_postnatal
+```
+
+We can use the same function to find weeks postnatal.
+
+```{r weeks_postnatal}
+# R code
+
+# Getting days at which animals were a certain age postnatal.
+weeks_postnatal = reltime(rawtimes = today,  
+                          reftimes = dob,
+                          units = "weeks")
+
+# Displaying days postnatal
+weeks_postnatal
+```
+
+There is also a function called `weeks_postnatal_seq()` to compute a sequence of days upon which an animal is a certain age.
+
+```{r weeks_postnatal_seq_function}
+# R code
+
+# Making a weeks postnatal sequence function
+first_16 <- weeks_postnatal_seq(dob = as.Date("2024-01-20"), 
+                                n_weeks = 16)
+first_16
+```
+
+### Computing UTC Offset
+
+It may be necessary to compute a UTC offset for each timestamp to assist in the subsequent data analysis. There is no base R functionality for this. It also appears to be absent from many of the date and time packages in R. `envisionR` has a function to do this.
+
+```{r get_utc_offset}
+# R code
+
+
+# Making arbitrary timestamps that have different UTC offsets
+ts <- as.POSIXct(c("2024-02-28 00:00:00",
+                   "2024-03-28 00:00:00"),
+                 tz = "US/Eastern")
+
+# Displaying offsets
+get_utc_offset(ts, as_numeric = TRUE)
+```
+
+### Daylight Time and 24 Hour Data
+
+For many of the variables of interest, we may assume a 24 hour clock. However, in most of North America, there are two times of year that the 24 hour clock is disrupted: the beginning of daylight time in spring, when one day is 23 hours long, and the end of daylight time in fall, when one day is 25 hours long. For some types of analysis that rely upon predictable periodicity such as time series decomposition, these disruptions may add an unwanted confound to data analysis.
+
+The ideal method of overcoming the effect of daylight time is to design experiments that ensure no effect of daylight time is not present in the dataset. That means one of two things:
+
+* Running an experiment that does not include a transition to or from daylight time.
+* Keeping the mouse room and the caging system on either standard or daylight time throughout the year.
+
+It should be noted that lights-on and lights-off are strong biological cues called zeitgebers. Alteration of the duration between zeitgebers by even just an hour for one night can disrupt an animal's behavior and physiology.
+
+However, in some experiments, it is either difficult or impossible to overcome a daylight time transition. In these cases, the analyst may have to find a solution that imputes a 24-hour clock on a day when it does not exist. Recommendations include the following:
+
+* For transition to daylight time, typically 02:00 will be missing from the local time. However, the internal UNIX time code will not allow for inserting an hour into this position. It is recommended to transition the experiment to an experimental time encoding. Add an hour to all times after the local transition to daylight time. Take the arithmetic mean of the two hours surrounding 02:00 on the transition day as the imputed time at that hour.
+* For transition from daylight time, typically 02:00 will appear twice in the local time. However, the internal UNIX time code will not allow for subtracting an hour from this position. It is recommended to transition the experiment to an experimental time encoding. Take the arithmetic mean of both 02:00 hours on the transition day as the imputed time for that hour.
+
+This method will result in an imputed 24 hour dataset suitable for analyses that assume a 24 hour clock such as time series decomposition.
+
+## Appendix: Learning Statistics and Using R
+
+### A Description of R
+
+This vignette uses the statitics and data analysis programming language R. If you are a complete novice R user, you may consider attending a [Carpentries workshop](https://carpentries.org/) on R.
+
+If you have some experience with R coding, [RStudio](https://posit.co/products/open-source/rstudio/) is recommended for your analysis. RStudio is an [integrated development environment (IDE)](https://simple.wikipedia.org/wiki/Integrated_development_environment), a computer program that is designed to assist in writing and running R code as well as generating data visualizations. RStudio generally makes the process of data analysis easier and more enjoyable.
+
+The standard set of tools available in an R installation is often called base R. A wide variety of [data structures](https://simple.wikipedia.org/wiki/Data_structure) and [functions](https://en.wikipedia.org/wiki/Function_(computer_programming)) are available in base R. For example, the `data.frame()` data structure operates much like a highly formalized Excel spreadsheet, the `t.test()` function can be used to compare the means of two groups, and the `plot()` function can be used to do basic data visualization.
+
+In addition, R is extensible and can be enhanced with a wide variety of [packages/libraries](https://en.wikipedia.org/wiki/Library_(computing)). Two primary resources are frequently used to share R libraries: the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/) and [Bioconductor](https://bioconductor.org/). Posit, the company that develops RStudio, maintains a suite of R packages called [`tidyverse`](https://www.tidyverse.org/), which is among the most widely used R packages. The `tidyverse` makes use of the [tidy data system](https://r4ds.hadley.nz/data-tidy). It includes three packages that have proven highly valuable for analyzing JAX Envision datasets: 
+
+* [`dplyr`](https://dplyr.tidyverse.org/), a grammar for data manipulation.
+* [`ggplot2`](https://ggplot2.tidyverse.org/), a grammar for data visualizaiton.
+* [`lubridate`](https://lubridate.tidyverse.org/), a flexible framework for working with date and time information. 
+
+**This vignette assumes that you will primarily work with** `tidyverse` **packages.** Posit, the company that develops RStudio, maintains a variety of [cheatsheets](https://posit.co/resources/cheatsheets/) that can be used to accelerate R coding. Many of these cheatsheets are helpful for `tidyverse` coding.
+
+### Getting Help within R
+
+To get help on any individual function within R, type a question mark and then the function in the R console. For example, `?t.test` will bring up documentation on the usage of the `t.test()` function that assists a user in correctly using this function. It describes the [arguments](https://en.wikipedia.org/wiki/Parameter_(computer_programming)) available to a user of this function, which can modify what the function returns.
+
+### Recommended Resources for Learning Statistics
+
+R is a very powerful [free and open source software (FOSS)](https://simple.wikipedia.org/wiki/Free_and_open-source_software) for statistical computing. Consequently, users of R frequently find themselves able to use tools that they may not completely understand. **Discussing your issues with a biostatistician is almost always a good idea.**
+
+In addition, there are many books and web resources for self-paced learning and utilizing statistics. A small selection of useful resources is outlined below:
+
+* *Data Analysis for the Life Sciences* by  Rafael A. Irizarry and Michael I. Love is a book for learning statistical analysis with practical examples in R. It is available as a [pay-what-you-can eBook](https://leanpub.com/dataanalysisforthelifesciences) as well as a [print version](https://www.amazon.com/Data-Analysis-Life-Sciences-R/dp/1498775675). 
+* The YouTube channel [StatQuest with Josh Starmer](https://www.youtube.com/channel/UCtYLUTtgS3k1Fg4y5tAhLbw) is an excellent resource for those who learn best through visuals. Explanations are clear and concise.
+* The Data Carpentries community has developed many courses in statistics with an emphasis on R. These include [Statistical Inferance for Biology](https://carpentries-incubator.github.io/statistical-inference-for-biology/index.html) and [Data Analysis and Visualization in R for Ecologists](https://datacarpentry.org/R-ecology-lesson/), which is useful for a variety of disciplines beyond only ecology.
+*  *Handbook of Biological Statistics* by John H. McDonald is a book available for free as a [PDF](http://www.biostathandbook.com/HandbookBioStatThird.pdf) and as a well-organized and searchable [website](https://www.biostathandbook.com/). A [spiral-bound print copy](https://www.lulu.com/shop/john-mcdonald/handbook-of-biological-statistics/paperback/product-1ey9e92.html?page=1&pageSize=4) is also available.
+* *The Analysis of Biological Data* by Michael Whitlock and Dolph Schluter is an excellent [textbook](https://www.amazon.com/Analysis-Biological-Data-Michael-Whitlock-dp-131922623X/dp/131922623X/ref=dp_ob_title_bk) for biostatistics.
+* For data visualization, *The Visual Display of Quantitative Information* by Edward Tufte is a classic [book](https://www.edwardtufte.com/tufte/books_vdqi) that outlines many helpful principles of compelling and truthful data visualization.
+
+## Appendix: Information about this Vignette
+
+This vignette was originally written in the [Quarto framework](https://quarto.org/), a multi-language data sciences notebooking system. The file was then ported to RMarkdown. The R session info is below:
+
+```{r sessioninfo}
+# R code
+
+sessionInfo()
+```
