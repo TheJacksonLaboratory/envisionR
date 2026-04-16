@@ -36,7 +36,7 @@ This vignette includes the following sections:
 * [Generating JAX Envision URLs](#generating-jax-envision-urls): How to create URLs that allow a user to watch specific moments of video flagged in an analysis.
 * [Data Wrangling and Quality Control](#data-wrangling-and-quality-control): How to import data into R and perform some basic quality control checks.
 * [Initial Data Visualization and Analysis](#initial-data-visualization-and-analysis): How to make some initial plots that assist in interpreting a dataset.
-* [Understanding Circadianism and Extracting Trend and Cycle](#understanding-circadianism-and-extracting-trend-and-cycle): 
+* [Understanding Circadianism and Extracting Trend and Cycle](#understanding-circadianism-and-extracting-trend-and-cycle): How to extract important components of cyclical datasets.
 * [Working with High Temporal Resolution Data](#working-with-high-temporal-resolution-data): How to work with data at temporal resolutions less than 1 hour (10 minute, 1 minute, or user-defined).
 * [Summarization and Statistical Inference](#summarization-and-statistical-inference): How to summarize data for statistical tests.
 
@@ -54,9 +54,9 @@ This vignette primarily analyzes activity-related digital measures. Activity is 
 
 ### Notes on R Coding Conventions
 
-We will use `tidyverse`, `janitor`, and `here`, all available from CRAN and installable using `install.packages()`, for data import. Note that we will make frequent use of tidy data and the pipe operator `|>` in R. Pipes and tidy data manipulation facilitate rapid transformation ana analysis of data frame type objects in R.
+We will use `tidyverse`, `janitor`, and `here`, all available from CRAN and installable using `install.packages()`, for data import. Note that we will make frequent use of tidy data and the pipe operator `|>` in R. Pipes and tidy data manipulation facilitate rapid transformation and analysis of data frame type objects in R.
 
-Additionally, all assignment operators for global variables used here are `<-` and all functions from packages outside of base R utilize the `{package}::{function}()` format to ensure that you knows which R package contains each function used in this vignette. This includes functions from `envisionR`.
+Additionally, all assignment operators for global variables used here are `<-` and all functions from packages outside of base R utilize the `{package}::{function}()` format to ensure that you know which R package contains each function used in this vignette. This includes functions from `envisionR`.
 
 ### Notes on Replicability and Reproducibility
 
@@ -96,7 +96,7 @@ library(envisionR)
 
 ### Generating JAX Envision URLs
 
-It is often usesful to create a URL to visualize the specific moments of video highlighted in an analysis. Such videos may allow the end user to look at exemplary or abberant moments in a study. These may be used to illustrate activities of interest. We can also use the process of making a URL to look at time and how it is encoded in R. We will use time frequently here.
+It is often useful to create a URL to visualize the specific moments of video highlighted in an analysis. Such videos may allow the end user to look at exemplary or aberrant moments in a study. These may be used to illustrate activities of interest. We can also use the process of making a URL to look at time and how it is encoded in R. We will use time frequently here.
 
 Envision URLs are comprised of a set of components that reference a specific organization, study, cage, and time.
 
@@ -127,9 +127,9 @@ Before importing the data, a good practice is to generate a metadata object with
 
 The time zone of a study is typically a [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Setting this time zone identifier in the metadata allows the analyst to avoid any future ambiguities in time.
 
-The study's app URL contains some important information. Each study has its own `org` ID and `study` ID. These IDs can help us 
+The study's app URL contains some important information. Each study has its own `org` ID and `study` ID. These IDs can help us interact with the Envision app.
 
-We use a function called  a `envision_metadata()`. This does some checks of our input, some data type conversion under the hood, and acts as a convenient source for study information in downstream steps.
+We use a function called `envision_metadata()`. This does some checks of our input, some data type conversion under the hood, and acts as a convenient source for study information in downstream steps.
 
 ```{r metadata}
 # R code
@@ -344,7 +344,7 @@ Variable Name                                 | Variable Description
 `food_occupancy_mean_per_cage_animals_hour`   | Amount of time spent in proximity to the food hopper at the cage level.
 `water_occupancy_mean_per_cage_animals_hour`  | Amount of time spent in proximety to the water bottles at the cage level.
 
-**NOTE: at the cage level, none of these variables has not been normalized for cage occupancy.** Unnormalized data may have issues when occupancy changes. In each dataset, it is necessary to evaluate whether cage occupancy might play an effect.
+**NOTE: at the cage level, none of these variables has been normalized for cage occupancy.** Unnormalized data may have issues when occupancy changes. In each dataset, it is necessary to evaluate whether cage occupancy might play an effect.
 
 We now run a summary of the dataset.
 
@@ -369,7 +369,7 @@ activity <- activity |>
 
 We will be working with the variable `movement_mean_per_cage_cm_s_hour`, which expresses the activity for that particular hour in the average velocity of mice inside the cage as cm/s. However, what if we wish to do a units conversion?
 
-We can change the units relatively simply with the function `velicity_units_convert()`. For example, if we wish to know meters per hour (m/h), we can make a new calculated column with this information.
+We can change the units relatively simply with the function `velocity_unit_convert()`. For example, if we wish to know meters per hour (m/h), we can make a new calculated column with this information.
 
 ```{r convert_to_m_h}
 # R code
@@ -421,7 +421,7 @@ We see that occupancy influences the distributions of activity in the dataset. T
 * For cage `C12`, only 1 mouse is present throughout the course of the experiment.
 * For cage `C17`, occupancy is 2 throughout the entire experiment.
 
-Normalizing for cage occupancy may make the distributions match one another better than they currently do. Performing the normalization by dividing `movement_mean_per_cage_cm_s_hour` by `animals_cage_quantity`.
+Normalizing for cage occupancy may make the distributions match one another better than they currently do. Normalization of the data can be performed by dividing `movement_mean_per_cage_cm_s_hour` by `animals_cage_quantity`.
 
 ```{r correcting_occupancy}
 # R code
@@ -456,7 +456,7 @@ The data have been quality checked and are ready for initial visualization.
 
 ## Initial Data Visualization and Analysis
 
-Exploratory analysis of JAX Envision data frequently starts out with visualization of the dataset with respect to experimental factors of interest. This 
+Exploratory analysis of JAX Envision data frequently starts out with visualization of the dataset with respect to experimental factors of interest. This approach often yields good insights about the data that can be supported statistically.
 
 ### On Figure Colors
 
@@ -600,7 +600,7 @@ We can already see the differences in activity due to differences in treatment.
 
 ## Understanding Circadianism and Extracting Trend and Cycle
 
-*Note: some of these analyses assume a 24 hour day. Transitions to daylight time violate this assumption. See the [subsection on Daylight Time and 24-Hour Data in Appendix: Tips and Tricks with Time](#daylight-time-and-24-hour-data).
+*NOTE: some of these analyses assume a 24 hour day. Transitions to daylight time violate this assumption. See the [subsection on Daylight Time and 24-Hour Data in Appendix: Tips and Tricks with Time](#daylight-time-and-24-hour-data).*
 
 ### Short Studies: Circadian-Matched Baseline Subtraction
 
@@ -720,7 +720,7 @@ group_mean_sem_ribbon_plot(activity_data = activity_tsd,
   ggokabeito::scale_fill_okabe_ito(order = okabe_order)
 ```
 
-This allows us to 
+This allows us to see specific moments of interest in long studies.
 
 ## Working with High Temporal Resolution Data
 
@@ -834,7 +834,7 @@ Sometimes we wish to do a statistical test on datasets. A natural question is wh
 
 However, if we summarize by taking the mean for a couple of time bins after the initial dose, we may identify an effect. That is what we will do here. We will use the 1 minute scale data.
 
-### A Note on Exploratory vs. Hypotheis-Driven Data Analysis
+### A Note on Exploratory vs. Hypothesis-Driven Data Analysis
 
 We are forming hypotheses here based upon what we saw in the plot above. This is an exploratory analysis that gives us some information about hypotheses we might wish to adjudicate more carefully in the future. The exploratory mode is a valid mode of scientific inquiry, but exploratory analyses are sometimes considered hypothesis-generating and not hypothesis-adjudicating.
 
@@ -905,7 +905,15 @@ activity_4hr_post_dose_ttest <- t.test(baseline_subtract_postdose_0to4hr ~ group
 activity_4hr_post_dose_ttest
 ```
 
-We see that for this specific comparison, 16 mg/kg caffeine significantly changes activity. We can use the same code as above, but change the dose from `dose1` to `dose2`.
+We see that for this specific comparison, 16 mg/kg caffeine produces a statistically significant change in activity. Recall our warning about HARKing: this hypothesis was generated from looking at the data, so we should take care when we interpret this finding.
+
+How should we interpret a finding from HARKing? One important check is the prior evidence of biological plausibility of a mechanism and the degree to which the finding agrees or conflicts with that prior evidence. In this example, our finding states that caffeine increases activity in mice for a few hours during the time where they are usually asleep. This is an uncontroversial statement since we already know that caffeine is a stimulant. The only new thing we are saying is that Envision can detect this in the four hours following caffeine dosing. We might be fully willing to accept this result without further scrutiny.
+
+Imagine, however, that we were testing a new compound and that Envision data were the first *in vivo* data for that compound. In this case, there is no prior expectation of a specific finding. The interpretation of the finding should be more circumspect. It may be better to interpret these data as a pilot showing when to look for an effect in a replication experiment.
+
+In either case, you should rarely make this decision alone. It is best to seek out adversarial opinions on the plausibility and next steps from the experiment. If your colleagues believe you are over-interpreting the data, you should take their critiques seriously.
+
+We can use the same code as above, but change the dose from `dose1` to `dose2`.
 
 ```{r dark_period_analysis}
 # R code
@@ -1058,7 +1066,7 @@ get_utc_offset(ts, as_numeric = TRUE)
 
 For many of the variables of interest, we may assume a 24 hour clock. However, in most of North America, there are two times of year that the 24 hour clock is disrupted: the beginning of daylight time in spring, when one day is 23 hours long, and the end of daylight time in fall, when one day is 25 hours long. For some types of analysis that rely upon predictable periodicity such as time series decomposition, these disruptions may add an unwanted confound to data analysis.
 
-The ideal method of overcoming the effect of daylight time is to design experiments that ensure no effect of daylight time is not present in the dataset. That means one of two things:
+The ideal method of overcoming the effect of daylight time is to design experiments without daylight time present in the dataset. That means one of two things:
 
 * Running an experiment that does not include a transition to or from daylight time.
 * Keeping the mouse room and the caging system on either standard or daylight time throughout the year.
@@ -1076,7 +1084,7 @@ This method will result in an imputed 24 hour dataset suitable for analyses that
 
 ### A Description of R
 
-This vignette uses the statitics and data analysis programming language R. If you are a complete novice R user, you may consider attending a [Carpentries workshop](https://carpentries.org/) on R.
+This vignette uses the statistics and data analysis programming language R. If you are a complete novice R user, you may consider attending a [Carpentries workshop](https://carpentries.org/) on R.
 
 If you have some experience with R coding, [RStudio](https://posit.co/products/open-source/rstudio/) is recommended for your analysis. RStudio is an [integrated development environment (IDE)](https://simple.wikipedia.org/wiki/Integrated_development_environment), a computer program that is designed to assist in writing and running R code as well as generating data visualizations. RStudio generally makes the process of data analysis easier and more enjoyable.
 
@@ -1085,7 +1093,7 @@ The standard set of tools available in an R installation is often called base R.
 In addition, R is extensible and can be enhanced with a wide variety of [packages/libraries](https://en.wikipedia.org/wiki/Library_(computing)). Two primary resources are frequently used to share R libraries: the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/) and [Bioconductor](https://bioconductor.org/). Posit, the company that develops RStudio, maintains a suite of R packages called [`tidyverse`](https://www.tidyverse.org/), which is among the most widely used R packages. The `tidyverse` makes use of the [tidy data system](https://r4ds.hadley.nz/data-tidy). It includes three packages that have proven highly valuable for analyzing JAX Envision datasets: 
 
 * [`dplyr`](https://dplyr.tidyverse.org/), a grammar for data manipulation.
-* [`ggplot2`](https://ggplot2.tidyverse.org/), a grammar for data visualizaiton.
+* [`ggplot2`](https://ggplot2.tidyverse.org/), a grammar for data visualization.
 * [`lubridate`](https://lubridate.tidyverse.org/), a flexible framework for working with date and time information. 
 
 **This vignette assumes that you will primarily work with** `tidyverse` **packages.** Posit, the company that develops RStudio, maintains a variety of [cheatsheets](https://posit.co/resources/cheatsheets/) that can be used to accelerate R coding. Many of these cheatsheets are helpful for `tidyverse` coding.
@@ -1102,7 +1110,7 @@ In addition, there are many books and web resources for self-paced learning and 
 
 * *Data Analysis for the Life Sciences* by  Rafael A. Irizarry and Michael I. Love is a book for learning statistical analysis with practical examples in R. It is available as a [pay-what-you-can eBook](https://leanpub.com/dataanalysisforthelifesciences) as well as a [print version](https://www.amazon.com/Data-Analysis-Life-Sciences-R/dp/1498775675). 
 * The YouTube channel [StatQuest with Josh Starmer](https://www.youtube.com/channel/UCtYLUTtgS3k1Fg4y5tAhLbw) is an excellent resource for those who learn best through visuals. Explanations are clear and concise.
-* The Data Carpentries community has developed many courses in statistics with an emphasis on R. These include [Statistical Inferance for Biology](https://carpentries-incubator.github.io/statistical-inference-for-biology/index.html) and [Data Analysis and Visualization in R for Ecologists](https://datacarpentry.org/R-ecology-lesson/), which is useful for a variety of disciplines beyond only ecology.
+* The Data Carpentries community has developed many courses in statistics with an emphasis on R. These include [Statistical Inference for Biology](https://carpentries-incubator.github.io/statistical-inference-for-biology/index.html) and [Data Analysis and Visualization in R for Ecologists](https://datacarpentry.org/R-ecology-lesson/), which is useful for a variety of disciplines beyond only ecology.
 *  *Handbook of Biological Statistics* by John H. McDonald is a book available for free as a [PDF](http://www.biostathandbook.com/HandbookBioStatThird.pdf) and as a well-organized and searchable [website](https://www.biostathandbook.com/). A [spiral-bound print copy](https://www.lulu.com/shop/john-mcdonald/handbook-of-biological-statistics/paperback/product-1ey9e92.html?page=1&pageSize=4) is also available.
 * *The Analysis of Biological Data* by Michael Whitlock and Dolph Schluter is an excellent [textbook](https://www.amazon.com/Analysis-Biological-Data-Michael-Whitlock-dp-131922623X/dp/131922623X/ref=dp_ob_title_bk) for biostatistics.
 * For data visualization, *The Visual Display of Quantitative Information* by Edward Tufte is a classic [book](https://www.edwardtufte.com/tufte/books_vdqi) that outlines many helpful principles of compelling and truthful data visualization.
