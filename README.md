@@ -15,8 +15,8 @@ install.packages("envisionR")
 You can install the development version from GitHub:
 
 ```R
-# install.packages("devtools")
-devtools::install_github("TheJacksonLaboratory/envisionR", build_vignettes = TRUE)
+# install.packages("pak")
+pak::pak("TheJacksonLaboratory/envisionR")
 ```
 
 ## Usage
