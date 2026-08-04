@@ -11,6 +11,10 @@
 #' @param lights_off the 24-hour time for lights-off as a \code{character}
 #' @param study_url the URL from the address bar of the study,
 #'  a \code{character}. NOTE: this can be any URL taken from within a study.
+#' @param activity_suite_version the version of activity suite used in the
+#'  study.
+#' @param respiration_version the version of the respiration algorithm used in
+#'  the study.
 #' @param override_tzassume override the default behavior of assuming a time
 #'  zone? (default: \code{FALSE})
 #' @param override_timecheck override the default behavior of assuming a time
@@ -24,9 +28,9 @@
 #'  zones are: `US/Alaska`, `US/Hawaii`, and `US/Arizona`.
 #'
 #' @note For Europe, the time zone `GB` will work for Great Britain, the
-#'  time zone `WET` for Portugal, the time zone `CET` will work for much
-#'  of central Europe, and `EET` will work for Finland, the Baltics, and many
-#'  eastern European countries. For any other time zones, use the
+#'  time zone `WET` will work for Portugal, the time zone `CET` will work for
+#'  much of central Europe, and `EET` will work for Finland, the Baltics, and
+#'  many eastern European countries. For any other time zones, use the
 #'  `list_tzones()`
 #'
 #' @note For any other time zones, the function `list_tzones()` will produce a
@@ -38,6 +42,8 @@ envision_metadata <- function(study_name = "",
                               lights_on = NULL,
                               lights_off = NULL,
                               study_url = NULL,
+                              activity_suite_version = NULL,
+                              respiration_version = NULL,
                               override_tzassume = FALSE,
                               override_timecheck = FALSE,
                               force_lightcycle = FALSE,
@@ -85,7 +91,7 @@ envision_metadata <- function(study_name = "",
   }
 
   # checking lights-on and lights-off input
-  if (!is.null(lights_on) & !is.null(lights_off)) {
+  if (!is.null(lights_on) && !is.null(lights_off)) {
     # check to see if it's a character vector
     stopifnot(is.character(lights_on))
     stopifnot(is.character(lights_off))
@@ -93,7 +99,7 @@ envision_metadata <- function(study_name = "",
     # logic for finding whether or not the lights-on and lights-off make sense
     time_on <- try(hms::as_hms(lights_on), silent = TRUE)
     time_off <- try(hms::as_hms(lights_off), silent = TRUE)
-    if (inherits(time_on, "try-error") | inherits(time_off, "try-error")) {
+    if (inherits(time_on, "try-error") || inherits(time_off, "try-error")) {
       stop(
         "reformat lights_on and/or lights_off as %HH:%MM:%SS (you entered ",
         lights_on, " for lights_on and ", lights_off, " for lights_off)\n"
@@ -107,7 +113,7 @@ envision_metadata <- function(study_name = "",
     if (lightdark_diff_s %/% 3600 < 8) {
       if (!force_lightcycle) {
         stop("lights-on and lights-off separated by less than 8 hours, check input")
-      } else if (force_lightcycle & !quietly) {
+      } else if (force_lightcycle && !quietly) {
         warning("lights-on and lights-off separated by less than 8 hours, check input")
       }
     }
@@ -141,6 +147,31 @@ envision_metadata <- function(study_name = "",
     study <- as.numeric(NA)
   }
 
+  if (!is.null(activity_suite_version)) {
+    if (grepl("^v", activity_suite_version)) {
+      activity_suite_version <- activity_suite_version
+    } else {
+      stop(
+        "activity_suite_version is not properly formed. Must have prefix 'v'."
+      )
+    }
+  } else {
+    activity_suite_version <- as.character(NA)
+  }
+
+  if (!is.null(respiration_version)) {
+    if (grepl("^v", respiration_version)) {
+      respiration_version <- respiration_version
+    } else {
+      stop(
+        "respiration_version is not properly formed. Must have prefix 'v'."
+      )
+    }
+  } else {
+    respiration_version <- as.character(NA)
+  }
+
+
   # make the metadata object
   evmeta <- list(
     study_name = study_name,
@@ -148,7 +179,9 @@ envision_metadata <- function(study_name = "",
     lights_on = time_on,
     lights_off = time_off,
     org = org,
-    study = study
+    study = study,
+    activity_suite_version = activity_suite_version,
+    respiration_version = respiration_version
   )
   return(evmeta)
 }
