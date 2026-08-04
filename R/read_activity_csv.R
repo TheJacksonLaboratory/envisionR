@@ -53,13 +53,6 @@ read_activity_csv <- function(csv, metadata = NULL,
       stopifnot(metadata[["tzone"]] %in% timezones_df$tz_name)
     }
 
-    if (!is.null(metadata[["activity_suite_version"]]) & !is.na(metadata[["activity_suite_version"]])) {
-      stopifnot(is.character(metadata[["activity_suite_version"]]))
-      activity_csv_version <- metadata[["activity_suite_version"]]
-    } else {
-      activity_csv_version <- NULL
-    }
-
     if (is.null(tzone) & !is.na(metadata[["tzone"]])) {
       tzone <- metadata[["tzone"]]
     } else if (!is.null(tzone) & !is.na(metadata[["tzone"]])) {
@@ -70,12 +63,7 @@ read_activity_csv <- function(csv, metadata = NULL,
     }
   }
 
-  activity_tibble <- read_activity_csv_raw(
-    csv,
-    tzone,
-    metrics,
-    activity_csv_version
-  )
+  activity_tibble <- read_activity_csv_raw(csv, tzone, metrics)
   return(activity_tibble)
 }
 
@@ -84,10 +72,8 @@ read_activity_csv <- function(csv, metadata = NULL,
 #' @param tzone Time zone for the study. If left as \code{NULL}, the function will attempt to assume a time zone and throw a warning.
 #' @param metrics Should the function expect cage (\code{"cage"}) or animal
 #' @noRd
-read_activity_csv_raw <- function(csv,
-                                  tzone = NULL,
-                                  metrics = NULL,
-                                  activity_csv_version = NULL) {
+read_activity_csv_raw <- function(csv, tzone = NULL,
+                                  metrics = NULL) {
   # Ensuring required packages are loaded
   stopifnot(requireNamespace("readr", quietly = TRUE))
   stopifnot(requireNamespace("janitor", quietly = TRUE))
@@ -100,27 +86,38 @@ read_activity_csv_raw <- function(csv,
     tz_name <- is_dst <- tz_isdst <- group_name <- cage_name <- NULL
 
   # Looking for a version of the activity CSV
-  if (grepl("\\.zip$", csv)) {
-    first10_csv <- base::readLines(unzip(csv), n = 10)
-  } else {
-    first10_csv <- base::readLines(csv, n = 10)
-  }
+  first10_csv <- base::readLines(csv, n = 10)
+
   # Looking at starting comment characters within the first 10 lines of the CSV
   # NOTE: this is to ensure that the comment character can be read in the body
   # of the sheet.
   comment_char_csv <- grep("^#", first10_csv, value = TRUE)
+  activity_csv_version <- grep("[Vv]ersion",
+    comment_char_csv,
+    value = TRUE
+  )
   header_col_csv <- grep("^start,", first10_csv, value = TRUE)
   colnames_csv <- unlist(strsplit(header_col_csv, ","))
-  movement_col <- grep("^movement|activity\\.", colnames_csv, value = TRUE)
+  movement_col <- grep("^movement", colnames_csv, value = TRUE)
 
-  if (is.null(activity_csv_version)) {
-    activity_csv_version <- "v1.1.0"
+  if (length(activity_csv_version) == 0) {
+    activity_csv_version <- "v0.0.0.9000"
+  } else {
+    activity_csv_version <- paste0(
+      "v",
+      gsub(
+        "^.*[Vv]ersion[:]?\\s?(.*)\\s?.?$",
+        "\\1", activity_csv_version
+      )
+    )
+    if (!activity_csv_version %in% envisionR::csv_column_defs$version_numbers) {
+      stop("invalid Envision csv version number: ", activity_csv_version)
+    }
   }
-
 
   if (is.null(metrics)) {
     metrics <- tolower(gsub(
-      "^movement|activity\\.(.*)\\.cm_s\\..*$",
+      "^movement\\.(.*)\\.cm_s\\..*$",
       "\\1",
       movement_col
     ))
@@ -128,16 +125,11 @@ read_activity_csv_raw <- function(csv,
       metrics <- "animal"
     } else if (grepl("cage", metrics)) {
       metrics <- "cage"
-    } else {
-      metrics <- "animal"
-      warning(paste(
-        "Assuming animal metrics, set explicity if otherwise."
-      ))
     }
   }
 
   timespan <- tolower(gsub(
-    "^.*\\.cm_s\\.(.*)$",
+    "^movement\\..*\\.cm_s\\.(.*)$",
     "\\1",
     movement_col
   ))
@@ -145,36 +137,8 @@ read_activity_csv_raw <- function(csv,
   # Getting definitions of columns by version
   metrics <- tolower(metrics)
   if (metrics %in% c("cage", "animal")) {
-    if (activity_csv_version %in% envisionR::csv_column_defs$version_numbers) {
-      # Conserving old behavior where column definitions were defined in csv_column_defs
-      metrics <- paste0(metrics, "_activity_", timespan)
-      activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
-
-      metric_cols <- names(envisionR::csv_column_defs[[metrics]][[activity_csv_version]])
-      metric_cols <- metric_cols[(grep("movement", metric_cols):length(metric_cols))]
-    } else {
-      # Getting the invariant columns from the v0.0.0.9000 version
-      metrics_name <- paste0(metrics, "_activity_", timespan)
-      activity_cols_def <- envisionR::csv_column_defs[[metrics_name]][["v0.0.0.9000"]]
-      movement_col <- grep("movement", names(activity_cols_def), value = TRUE)
-      movement_col <- which(names(activity_cols_def) == movement_col)
-      activity_cols_prefices <- names(activity_cols_def)[1:(movement_col - 1)]
-      activity_cols_def <- activity_cols_def[activity_cols_prefices]
-
-      # Getting the metric columns and coercing them all to double precision
-      activity_cols_from_coldefs <- grep(
-        paste0(
-          metrics, "\\..*\\.",
-          timespan, "$"
-        ),
-        colnames_csv,
-        value = TRUE
-      )
-      for (coldef in activity_cols_from_coldefs) {
-        activity_cols_def[[coldef]] <- readr::col_double()
-      }
-      metric_cols <- activity_cols_from_coldefs
-    }
+    metrics <- paste0(metrics, "_activity_", timespan)
+    activity_cols_def <- envisionR::csv_column_defs[[metrics]][[activity_csv_version]]
   } else {
     stop("metrics should be defined as either cage or animal level")
   }
@@ -261,6 +225,5 @@ read_activity_csv_raw <- function(csv,
     ) |>
     dplyr::arrange(group_name, cage_name, start)
 
-  attr(activity_data, "metrics") <- janitor::make_clean_names(metric_cols)
   return(activity_data)
 }
